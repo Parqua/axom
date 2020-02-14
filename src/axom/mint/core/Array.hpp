@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_ARRAY_HPP_
-#define AXOM_ARRAY_HPP_
+#ifndef MINT_ARRAY_HPP_
+#define MINT_ARRAY_HPP_
 
 #include "axom/config.hpp"                   // for compile-time defines
 #include "axom/core/Macros.hpp"              // for axom macros
@@ -17,6 +17,9 @@
 #include <iostream>                 // for std::cerr
 
 namespace axom
+{
+
+namespace mint
 {
 
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
@@ -763,6 +766,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
   assert( m_data != nullptr || m_capacity <= 0 );
 }
 
+} /* namespace mint */
 } /* namespace axom */
 
-#endif /* AXOM_ARRAY_HPP_ */
+#endif /* MINT_ARRAY_HPP_ */
