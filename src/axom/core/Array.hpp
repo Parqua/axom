@@ -661,7 +661,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     updateNumElements( new_capacity );
   }
 
-  m_data = axom::reallocate( m_data, new_capacity );
+  m_data = axom::reallocate< T >( m_data, new_capacity );
   m_capacity = new_capacity;
 
   assert( m_data != nullptr || m_capacity <= 0 );
@@ -689,7 +689,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_elements )
     utilities::processAbort();
   }
 
-  m_data = axom::reallocate( m_data, new_capacity );
+  m_data = axom::reallocate< T >( m_data, new_capacity );
   m_capacity = new_capacity;
 
   assert( m_data != nullptr || m_capacity <= 0 );
