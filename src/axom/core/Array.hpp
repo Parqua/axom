@@ -198,8 +198,7 @@ public:
    *
    * \param [in] value the value to set to.
    */
-  void fill( const T& value )
-  { std::fill_n( m_data, m_num_elements, value ); }
+  void fill( const T& value );
 
   /*!
    * \brief Push a value to the back of the array.
@@ -481,6 +480,15 @@ Array< T >::~Array()
   m_data = nullptr;
 }
 
+//------------------------------------------------------------------------------
+template< typename T >
+inline void Array< T >::fill( const T& value )
+{
+  for (IndexType i = 0 ; i < m_num_elements ; i++)
+  {
+    m_data[ i ] = value;
+  }
+}
 
 //------------------------------------------------------------------------------
 template< typename T >
