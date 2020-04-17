@@ -664,6 +664,61 @@ TEST( core_array_DeathTest, checkExternal )
   }
 }
 
+//------------------------------------------------------------------------------
+TEST( core_array, checkSwap )
+{
+  //TODO need to have copy operator // semantics; how else are you going 
+  // to verify that swap was successful?
+}
+
+//------------------------------------------------------------------------------
+TEST( core_array, checkIterator )
+{
+  constexpr int SIZE = 1000;
+  axom::Array< int > v_int( SIZE );
+
+  /* Push 0...999 elements */
+  for (int i = 0; i < SIZE; i++)
+  {
+    v_int[ i ] = i;
+  }
+
+  EXPECT_EQ( *v_int.begin(), 0 );
+  EXPECT_EQ( *(v_int.end() - 1), SIZE - 1 );
+  EXPECT_EQ( v_int.size(), SIZE );
+
+  /* Erase nothing */
+  axom::Array<int>::ArrayIterator ret1 = 
+    v_int.erase( v_int.begin() + SIZE / 2, v_int.begin() + SIZE / 2);
+
+  EXPECT_EQ( ret1, v_int.begin() + SIZE / 2 );
+  EXPECT_EQ( v_int.size(), SIZE );
+
+  /* Erase half the elements */
+  axom::Array<int>::ArrayIterator ret2 =
+    v_int.erase (v_int.begin(), v_int.begin() + SIZE / 2 );
+
+  EXPECT_EQ( ret2, v_int.begin() );
+  EXPECT_EQ( *v_int.begin(), SIZE / 2 );
+  EXPECT_EQ( *(v_int.end() - 1), SIZE - 1 );
+  EXPECT_EQ( v_int.size(), SIZE / 2 );
+
+  /* Erase first, last elements */
+  axom::Array<int>::ArrayIterator ret3 = v_int.erase( v_int.begin() );
+
+  EXPECT_EQ( ret3, v_int.begin() );
+  EXPECT_EQ( *v_int.begin(), SIZE / 2 + 1 );
+
+  axom::Array<int>::ArrayIterator ret4 = v_int.erase( v_int.end() - 1);
+
+  EXPECT_EQ( ret4, v_int.end() );
+  EXPECT_EQ( *(v_int.end() - 1), SIZE - 2 );
+
+  /* Clear the rest of the array */
+  v_int.clear();
+  EXPECT_EQ( v_int.size(), 0);
+}
+
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
