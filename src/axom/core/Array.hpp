@@ -15,6 +15,7 @@
 
 // C/C++ includes
 #include <iostream>                 // for std::cerr and std::ostream
+#include <cstring>                  // for std::memcpy
 
 namespace axom
 {
