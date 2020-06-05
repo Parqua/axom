@@ -681,7 +681,6 @@ Array< T >::Array( IndexType num_elements, IndexType capacity ) :
   m_is_external( false )
 {
   initialize( num_elements, capacity );
-  fill( T() );
 }
 
 //------------------------------------------------------------------------------
