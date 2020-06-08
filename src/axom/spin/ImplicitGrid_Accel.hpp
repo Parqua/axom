@@ -3,14 +3,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SPIN_IMPLICIT_GRID__HPP_
-#define SPIN_IMPLICIT_GRID__HPP_
+#ifndef SPIN_IMPLICIT_GRID_ACCEL__HPP_
+#define SPIN_IMPLICIT_GRID_ACCEL__HPP_
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"  // for clamp functions
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-#include "axom/array.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -54,7 +53,7 @@ namespace spin
  * small index space) in a relatively coarse grid.
  */
 template<int NDIMS, typename TheIndexType = int>
-class ImplicitGrid
+class ImplicitGrid_Accel
 {
 public:
   using IndexType = TheIndexType;
@@ -79,7 +78,7 @@ public:
    * \note Users must call initialize() to initialize the ImplicitGrid
    *       after constructing with the default constructor
    */
-  ImplicitGrid() : m_initialized(false) {}
+  ImplicitGrid_Accel() : m_initialized(false) {}
 
   /*!
    * \brief Constructor for an implicit grid from a bounding box,
@@ -93,7 +92,7 @@ public:
    * \sa initialize() for details on setting grid resolution
    * when \a gridRes is NULL
    */
-  ImplicitGrid(const SpatialBoundingBox& boundingBox,
+  ImplicitGrid_Accel(const SpatialBoundingBox& boundingBox,
                const GridCell* gridRes,
                int numElts)
     : m_bb(boundingBox), m_initialized(false)
@@ -114,7 +113,7 @@ public:
    * \sa initialize() for details on setting grid resolution
    * when \a gridRes is NULL
    */
-  ImplicitGrid(const double* bbMin,
+  ImplicitGrid_Accel(const double* bbMin,
                const double* bbMax,
                const int* gridRes,
                int numElts)
@@ -321,16 +320,16 @@ public:
    * \sa getCandidates()
    */
   template<typename QueryGeom>
-  axom::Array<IndexType> getCandidatesAsArray(const QueryGeom& query) const
+  axom::Array<IndexType> * getCandidatesAsArray(const QueryGeom& query) const
   {
     BitsetType candidateBits = getCandidates(query);
-    axom::Array<IndexType> candidatesVec(candidateBits.count(), 1, candidateBits.count());
+    axom::Array<IndexType> *candidatesVec = new axom::Array(candidateBits.count(), 1, candidateBits.count());
     
     for(IndexType eltIdx = candidateBits.find_first() ;
         eltIdx != BitsetType::npos;
         eltIdx = candidateBits.find_next( eltIdx) )
     {
-      candidatesVec.append( eltIdx );
+      candidatesVec->append( eltIdx );
     }
 
     return candidatesVec;
