@@ -323,7 +323,7 @@ public:
   axom::Array<IndexType> * getCandidatesAsArray(const QueryGeom& query) const
   {
     BitsetType candidateBits = getCandidates(query);
-    axom::Array<IndexType> *candidatesVec = new axom::Array(candidateBits.count(), 1, candidateBits.count());
+    axom::Array<IndexType> *candidatesVec = new axom::Array<IndexType>(0, 1, candidateBits.count());
     
     for(IndexType eltIdx = candidateBits.find_first() ;
         eltIdx != BitsetType::npos;
