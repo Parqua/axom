@@ -339,7 +339,7 @@ TYPED_TEST( ImplicitGridTest, get_candidates_pt)
       // Test getCandidatesAsArray() which returns a vector
       CandidateVector * candidateVec = grid.getCandidatesAsArray(queryPt);
       EXPECT_EQ( expSize, candidateVec->size() );
-      EXPECT_EQ( expIdx, *candidateVec[0] );
+      EXPECT_EQ( expIdx, (*candidateVec)[0] );
     }
 
     // Test some points that are expected to not match
@@ -382,7 +382,7 @@ TYPED_TEST( ImplicitGridTest, get_candidates_pt)
 
     CandidateVector * candidateVec = grid.getCandidatesAsArray(queryPt);
     EXPECT_EQ( expSize, candidateVec->size() );
-    EXPECT_EQ( IndexType(2), *candidateVec[0] );
+    EXPECT_EQ( IndexType(2), (*candidateVec)[0] );
   }
 
   // test a point that should contain only obj3
@@ -398,7 +398,7 @@ TYPED_TEST( ImplicitGridTest, get_candidates_pt)
 
     CandidateVector * candidateVec = grid.getCandidatesAsArray(queryPt);
     EXPECT_EQ( expSize, candidateVec->size() );
-    EXPECT_EQ( IndexType(3), *candidateVec[0] );
+    EXPECT_EQ( IndexType(3), (*candidateVec)[0] );
   }
 
   // test a point that should contain obj2 and obj3, but not obj1
@@ -444,7 +444,7 @@ TYPED_TEST( ImplicitGridTest, get_candidates_box)
 
   using IndexType = typename GridT::IndexType;
   using CandidateBitset = typename GridT::BitsetType;
-  using CandidateVector * = axom::Array<IndexType>;
+  using CandidateVector = axom::Array<IndexType>;
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
