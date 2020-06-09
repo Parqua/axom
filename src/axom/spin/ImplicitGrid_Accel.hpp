@@ -6,10 +6,14 @@
 #ifndef SPIN_IMPLICIT_GRID_ACCEL__HPP_
 #define SPIN_IMPLICIT_GRID_ACCEL__HPP_
 
+#include "RAJA/RAJA.hpp"
+
 #include "axom/config.hpp"
 #include "axom/core.hpp"  // for clamp functions
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
+
+#include "axom/core/execution/execution_space.hpp" // for execution spaces for RAJA
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -52,7 +56,7 @@ namespace spin
  * is designed for quick indexing and searching over a static (and relatively
  * small index space) in a relatively coarse grid.
  */
-template<int NDIMS, typename TheIndexType = int>
+template<int NDIMS, typename TheIndexType = int, typename ExecSpace=axom::SEQ_EXEC>
 class ImplicitGrid_Accel
 {
 public:
@@ -170,12 +174,13 @@ public:
     {
       m_gridRes = GridCell(*gridRes);
     }
-
     // ensure that resolution in each dimension is at least one
-    for(int i=0 ; i< NDIMS ; ++i)
+    //for(int i=0 ; i< NDIMS ; ++i)
+    for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
     {
+      
       m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
-    }
+    });
 
     // Setup lattice
     m_bb = boundingBox;
@@ -183,11 +188,12 @@ public:
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
 
-    for(int i=0 ; i<NDIMS ; ++i)
+    //for(int i=0 ; i<NDIMS ; ++i)
+    for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
-    }
+    });
 
     // Set the expansion factor for each element to a small fraction of the
     // grid's bounding boxes diameter

@@ -42,6 +42,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
 
   set( spin_headers
        ${spin_headers}
+       ImplicitGrid_Accel.hpp
        BVH.hpp
 
        ## internal
