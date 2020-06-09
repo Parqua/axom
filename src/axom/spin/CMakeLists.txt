@@ -21,6 +21,7 @@ set( spin_headers
      Brood.hpp
      DenseOctreeLevel.hpp
      ImplicitGrid.hpp
+     ImplicitGrid_Accel.hpp
      MortonIndex.hpp
      OctreeBase.hpp
      OctreeLevel.hpp
