@@ -304,12 +304,19 @@ public:
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
 
     BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
-
-    for(int dim=1 ; dim< NDIMS ; ++dim)
+    BitsetType identity(bits.size());
+    identity.flip();
+	
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(bits, identity);
+   
+    
+    for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType dim)
+    //for(int dim=1 ; dim< NDIMS ; ++dim)
     {
-      bits &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
-    }
-
+      bit_string &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
+    });
+    bits = bit_string.get();
     return bits;
   }
 
