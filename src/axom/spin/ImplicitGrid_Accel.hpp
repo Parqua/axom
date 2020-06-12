@@ -22,6 +22,12 @@
 
 #include <vector>
 
+#ifdef AXOM_USE_CUDA
+#define LAMBDA_FILLER AXOM_HOST_DEVICE
+#else
+#define LAMBDA_FILLER
+#endif
+
 namespace axom
 {
 namespace spin
@@ -242,10 +248,10 @@ public:
       const IndexType upper =
         axom::utilities::clampUpper(upperCell[i], highestBin(i) );
 
-      for(int j= lower ; j <= upper ; ++j)
+      for_all< ExecSpace >(lower, upper+1, [=, &binData] LAMBDA_FILLER(IndexType j)
       {
         binData[j].set(idx);
-      }
+      });
     }
   }
 
@@ -359,12 +365,13 @@ public:
     if(!m_elementSet.isValidIndex(idx) )
       ret = false;
 
-    for(int i=0 ; i< NDIMS ; ++i)
+    //for(int i=0 ; i< NDIMS ; ++i)
+    for_all< ExecSpace >(NDIMS, [=, &ret] LAMBDA_FILLER(IndexType i)
     {
       ret = ret
             && m_bins[i].isValidIndex(gridCell[i])
             && m_binData[ i][ gridCell[i] ].test( idx);
-    }
+    });
 
     return ret;
   }
@@ -405,13 +412,20 @@ private:
     //       are not restricted to the implicit grid's bounding box
     lower = axom::utilities::clampLower(lower, IndexType() );
     upper = axom::utilities::clampUpper(upper, highestBin(dim));
+    
+    BitsetType bits;
 
-    BitsetType bits = m_binData[dim][lower];
-    for(int i = lower+1 ; i<= upper ; ++i)
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitOr< reduce_pol, BitsetType > bit_string( m_binData[dim][lower], BitsetType(m_binData[dim][lower].size()));
+    // for_all< ExecSpace >(lower+1, upper+1, AXOM_LAMBDA(IndexType i)
+    //for(int i = lower+1 ; i<= upper ; ++i)
+    
+    for_all< ExecSpace >(lower+1, upper+1, AXOM_LAMBDA(IndexType i)
     {
-      bits |= m_binData[dim][i];
-    }
+      bit_string |= m_binData[dim][i];
+    });
 
+    bits = bit_string.get();
     return bits;
   }
 
