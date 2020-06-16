@@ -840,7 +840,7 @@ inline void Array< T >::insert( IndexType pos, const T& value )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline Array< T >::ArrayIterator 
+inline typename Array< T >::ArrayIterator 
 Array< T >::insert( Array< T >::ArrayIterator pos, const T& value )
 {
   assert( pos >= begin() && pos <= end() );
@@ -862,7 +862,7 @@ inline void Array< T >::insert( IndexType pos, IndexType n, const T* values )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline Array< T >::ArrayIterator 
+inline typename Array< T >::ArrayIterator 
 Array< T >::insert( Array< T >::ArrayIterator pos, 
                     IndexType n,
                     const T* values )
@@ -885,7 +885,7 @@ inline void Array< T >::insert( IndexType pos, IndexType n, const T& value )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline Array< T >::ArrayIterator
+inline typename Array< T >::ArrayIterator
 Array< T >::insert( Array< T >::ArrayIterator pos,
                     IndexType n, 
                     const T& value )
