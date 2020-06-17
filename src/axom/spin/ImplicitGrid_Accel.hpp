@@ -166,7 +166,7 @@ public:
                   int numElts)
   {
     SLIC_ASSERT( !m_initialized);
-
+    int element_count;
     // Setup Grid Resolution, dealing with possible null pointer
     if(gridRes == nullptr)
     {
@@ -193,12 +193,12 @@ public:
     m_lattice = spin::rectangular_lattice_from_bounding_box(boundingBox,
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
-
+    element_count = m_elementSet.size();
     //for(int i=0 ; i<NDIMS ; ++i)
     for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
+      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(element_count));
     });
 
     // Set the expansion factor for each element to a small fraction of the
@@ -241,16 +241,16 @@ public:
 
     for(int i=0 ; i< NDIMS ; ++i)
     {
-      BinBitMap& binData = m_binData[i];
+      //BinBitMap& binData = m_binData[i];
 
       const IndexType lower =
         axom::utilities::clampLower(lowerCell[i], IndexType() );
       const IndexType upper =
         axom::utilities::clampUpper(upperCell[i], highestBin(i) );
 
-      for_all< ExecSpace >(lower, upper+1, [=, &binData] LAMBDA_FILLER(IndexType j)
+      for_all< ExecSpace >(lower, upper+1, [=] LAMBDA_FILLER(IndexType j)
       {
-        binData[j].set(idx);
+        m_binData[i][j].set(idx);
       });
     }
   }
@@ -365,15 +365,16 @@ public:
    * \return True if the bounding box of element \a idx overlaps
    * with GridCell \a gridCell.
    */
+
   bool contains(const GridCell& gridCell, IndexType idx) const
   {
-    bool ret = true;
-
-    if(!m_elementSet.isValidIndex(idx) )
+    bool ret;    
+    if(!m_elementSet.isValidIndex(idx) ){
       ret = false;
+	}
 
     //for(int i=0 ; i< NDIMS ; ++i)
-    for_all< ExecSpace >(NDIMS, [=, &ret] LAMBDA_FILLER(IndexType i)
+    for_all< ExecSpace >(NDIMS, [=] LAMBDA_FILLER(IndexType i)
     {
       ret = ret
             && m_bins[i].isValidIndex(gridCell[i])
@@ -396,6 +397,7 @@ private:
     return m_bins[dim].size()-1;
   }
 
+public:
   /*!
    * \brief Queries the bits that are set for dimension \a dim
    * within the range of boxes \a lower to \a upper
