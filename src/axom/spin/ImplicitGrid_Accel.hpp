@@ -276,12 +276,20 @@ public:
     //       This is valid since we've already ensured that pt is in the bbox.
     IndexType idx = axom::utilities::clampUpper(gridCell[0], highestBin(0));
     BitsetType res = m_binData[0][ idx ];
-
-    for(int i=1 ; i< NDIMS ; ++i)
+    
+    BitsetType identity(res.size());
+    identity.flip();
+	
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(res, identity);
+   
+    //for(int i=1 ; i< NDIMS ; ++i)
+    for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType i)
     {
-      idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
-      res &= m_binData[i][idx];
-    }
+      IndexType loop_idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
+      bit_string &= m_binData[i][loop_idx];
+    });
+    res = bit_string.get();
 
     return res;
   }
@@ -371,16 +379,18 @@ public:
     bool ret;    
     if(!m_elementSet.isValidIndex(idx) ){
       ret = false;
+      return ret;
 	}
-
+    
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitAnd< reduce_pol, unsigned int > tmp_ret(1);
     //for(int i=0 ; i< NDIMS ; ++i)
     for_all< ExecSpace >(NDIMS, [=] LAMBDA_FILLER(IndexType i)
     {
-      ret = ret
-            && m_bins[i].isValidIndex(gridCell[i])
-            && m_binData[ i][ gridCell[i] ].test( idx);
+      tmp_ret &= m_bins[i].isValidIndex(gridCell[i])
+               & m_binData[ i][ gridCell[i] ].test( idx);
     });
-
+    ret = (bool)tmp_ret.get();
     return ret;
   }
 
