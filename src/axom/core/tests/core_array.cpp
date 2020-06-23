@@ -1033,48 +1033,6 @@ int main(int argc, char* argv[])
   // finalized when exiting main scope
 
   result = RUN_ALL_TESTS();
-  
-  axom::Array< int > a( 3, 3 );
-  std::cout << "1st element is " << a[0] << std::endl;
-  std::cout << "2nd element is " << a[1] << std::endl;
-  std::cout << "3rd element is " << a[2] << std::endl;
-
-  axom::Array< double > b( 3, 3 );
-  std::cout << "1st element is " << b[0] << std::endl;
-  std::cout << "2nd element is " << b[1] << std::endl;
-  std::cout << "3rd element is " << b[2] << std::endl;
-
-    axom::Array< int > v1( 3, 3 );
-    axom::Array< int > v2( 3, 3 );
-    v1[0] = 1; v1[1] = 2; v1[2] = 3;
-    // v2[0] = 99; v2[1] = 98; v2[2] = 97;
- 
- 
-    std::cout << "v1: ";
-    std::cout << v1[0] << " " << v1[1] << " " << v1[2] << std::endl;
- 
-    std::cout << "\nv2: ";
-    std::cout << v2[0] << " " << v2[1] << " " << v2[2] << std::endl;
- 
-    std::cout << "\n-- SWAP\n";
-    v2.swap(v1);
- 
-    std::cout << "v1: ";
-    std::cout << v1[0] << " " << v1[1] << " " << v1[2] << std::endl;
- 
-    std::cout << "\nv2: ";
-    std::cout << v2[0] << " " << v2[1] << " " << v2[2] << std::endl;
-    std::cout << "v1 array is " << v1 << std::endl;
-    v1.print(std::cout);
-
-    std::cout << *(v2.begin()) << std::endl;
-
-    std::cout << "Checking to see if this workss " << v2.end() - v2.begin() << std::endl;
-
-    v2.clear();
-    std::cout << "v2 array is " << v2 << std::endl;
-    std::cout << "v2 size is " << v2.size() << std::endl;
-    std::cout << "v2 capacity is " << v2.capacity() << std::endl;
 
   return result;
 }
