@@ -322,6 +322,15 @@ public:
   void push_back( const T& value );
 
   /*!
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to move to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void push_back( T&& value );
+
+  /*!
    * \brief Modify the values of existing elements.
    *
    * \param [in] elements the new elements to write.
@@ -829,14 +838,14 @@ inline void Array< T >::fill( const T& value )
 template< typename T >
 inline void Array< T >::push_back( const T& value )
 {
-  IndexType new_size = m_num_elements + 1;
-  if ( new_size > m_capacity )
-  {
-    dynamicRealloc( new_size );
-  }
+  emplace_back(value);
+}
 
-  m_data[ m_num_elements ] = value;
-  updateNumElements( new_size );
+//------------------------------------------------------------------------------
+template< typename T >
+inline void Array< T >::push_back( T&& value )
+{
+  emplace_back(std::move(value));
 }
 
 //------------------------------------------------------------------------------

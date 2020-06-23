@@ -301,7 +301,6 @@ void check_resize( Array< T >& v )
   for ( IndexType i = 0 ; i < n_elements ; ++i )
   {
       IndexType i_real = i + size;
-      // v.push_back(i_real - 5 * i_real + 7 );
       values[ i ] = i_real - 5 * i_real + 7;
   }
 
