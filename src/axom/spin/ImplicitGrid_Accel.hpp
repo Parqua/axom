@@ -13,6 +13,7 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
+#include "axom/core/utilities/AnnotationMacros.hpp" //for annotations
 #include "axom/core/execution/execution_space.hpp" // for execution spaces for RAJA
 
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -166,6 +167,7 @@ public:
                   int numElts)
   {
     SLIC_ASSERT( !m_initialized);
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_init");
     int element_count;
     // Setup Grid Resolution, dealing with possible null pointer
     if(gridRes == nullptr)
@@ -229,7 +231,7 @@ public:
   void insert(SpatialBoundingBox bbox, IndexType idx)
   {
     SLIC_ASSERT(m_initialized);
-
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_insert");
     // Note: We slightly inflate the bbox of the objects.
     //       This effectively ensures that objects on grid boundaries are added
     //       in all nearby grid cells.
@@ -266,6 +268,7 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_candidates_point");
     if(!m_initialized || !m_bb.contains(pt) )
       return BitsetType(0);
 
@@ -305,7 +308,9 @@ public:
    */
   BitsetType getCandidates(const SpatialBoundingBox& box) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_candidates_box");
     if(!m_initialized || !m_bb.intersectsWith(box) )
+    
       return BitsetType(0);
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
@@ -376,6 +381,7 @@ public:
 
   bool contains(const GridCell& gridCell, IndexType idx) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_contains");
     bool ret;    
     if(!m_elementSet.isValidIndex(idx) ){
       ret = false;
@@ -427,6 +433,7 @@ public:
    */
   BitsetType getBitsInRange(int dim, int lower, int upper) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_bits_in_range");
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
     lower = axom::utilities::clampLower(lower, IndexType() );
