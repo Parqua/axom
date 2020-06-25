@@ -126,6 +126,7 @@ public:
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
     GridCell res;
+
     if(gridRes != nullptr){
       res = GridCell(gridRes, NDIMS);
     }
@@ -177,8 +178,7 @@ public:
 
     // ensure that resolution in each dimension is at least one
     for(int i=0 ; i< NDIMS ; ++i)
-    {
-      fprintf(stderr, "RESSETUP %d\n", m_gridRes[i]);  
+    {       
       m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
     }
 
@@ -187,9 +187,7 @@ public:
     m_lattice = spin::rectangular_lattice_from_bounding_box(boundingBox,
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
-    fprintf(stderr, "LATTICE SPACING\n");
-    m_lattice.spacing().print(std::cerr);
-    fprintf(stderr, "LATTICE SPACING \n");  
+      
     for(int i=0 ; i<NDIMS ; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
@@ -233,12 +231,7 @@ public:
     
     const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
     const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
-    fprintf(stderr, "box_size");
-    m_bb.print(std::cerr);
-    bbox.print(std::cerr);
-    lowerCell.print(std::cerr);
-    upperCell.print(std::cerr);
-    fprintf(stderr, "box_size\n");
+    
     for(int i=0 ; i< NDIMS ; ++i)
     {
       BinBitMap& binData = m_binData[i];
