@@ -10,6 +10,7 @@
 #include "axom/core.hpp"  // for clamp functions
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
+#include <iostream>
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -124,9 +125,20 @@ public:
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
-    const GridCell* pRes =
-      (gridRes != nullptr) ? &m_gridRes : nullptr;
-
+    
+    GridCell *pRes; 
+      
+    if(gridRes != nullptr){
+       /* if(NDIMS == 2){
+            pRes = GridCell::make_point(gridRes[0], gridRes[1]); 
+        }
+        else{
+            pRes = GridCell::make_point(gridRes[0], gridRes[1], gridRes[2]);
+        }*/
+        pRes = new GridCell(gridRes, NDIMS);
+    }
+    else{ pRes = nullptr; }
+       
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
       pRes, numElts);
@@ -174,6 +186,7 @@ public:
     // ensure that resolution in each dimension is at least one
     for(int i=0 ; i< NDIMS ; ++i)
     {
+      fprintf(stderr, "RESSETUP %d\n", m_gridRes[i]);  
       m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
     }
 
@@ -182,7 +195,9 @@ public:
     m_lattice = spin::rectangular_lattice_from_bounding_box(boundingBox,
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
-
+    fprintf(stderr, "LATTICE SPACING\n");
+    m_lattice.spacing().print(std::cerr);
+    fprintf(stderr, "LATTICE SPACING \n");  
     for(int i=0 ; i<NDIMS ; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
@@ -223,10 +238,15 @@ public:
     //       in all nearby grid cells.
 
     bbox.expand(m_expansionFactor);
-
+    
     const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
     const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
-
+    fprintf(stderr, "box_size");
+    m_bb.print(std::cerr);
+    bbox.print(std::cerr);
+    lowerCell.print(std::cerr);
+    upperCell.print(std::cerr);
+    fprintf(stderr, "box_size\n");
     for(int i=0 ; i< NDIMS ; ++i)
     {
       BinBitMap& binData = m_binData[i];
