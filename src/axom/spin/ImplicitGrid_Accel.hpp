@@ -132,15 +132,18 @@ public:
   {
     SLIC_ASSERT( bbMin != nullptr);
     SLIC_ASSERT( bbMax != nullptr);
-
+    
+    GridCell res;
+    if(gridRes !=nullptr){{
+      res = GridCell(gridRes, NDIMS);
+    }
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
-    const GridCell* pRes =
-      (gridRes != nullptr) ? &m_gridRes : nullptr;
 
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
-      pRes, numElts);
+      (gridRes != nullptr) ? &res : nullptr, 
+      numElts);
   }
 
   /*! Predicate to check if the ImplicitGrid has been initialized */
