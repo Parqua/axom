@@ -76,6 +76,7 @@ bool BitSet::isValid() const
 
   if (m_numBits < 0 || m_numWords < 0)
   {
+    fprintf(stderr, "Invalid due to bits or words <\n\n");
     valid = false;
   }
 
@@ -83,6 +84,7 @@ bool BitSet::isValid() const
   {
     if (m_numWords != 1 || m_data[0] != Word(0))
     {
+        fprintf(stderr, "Invalid due to word count: %d, or data entry: %llu  %llu \n\n", m_numWords, m_data[0], Word(0));
       valid = false;
     }
   }
@@ -254,8 +256,11 @@ bool BitSet::operator==(const BitSet & other) const
   {
     return false;
   }
-
-  return m_data == other.m_data;
+  bool tester = false;
+  for(int i = 0; i < m_numWords; i++){
+        tester = tester && (m_data[i] == other.m_data[i]);
+  }
+  return tester;
 }
 
 
