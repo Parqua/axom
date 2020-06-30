@@ -134,7 +134,7 @@ public:
     SLIC_ASSERT( bbMax != nullptr);
     
     GridCell res;
-    if(gridRes !=nullptr){{
+    if(gridRes !=nullptr){
       res = GridCell(gridRes, NDIMS);
     }
     // Set up the grid resolution from the gridRes array
