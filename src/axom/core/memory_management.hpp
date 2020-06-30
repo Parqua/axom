@@ -156,6 +156,7 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 template < typename T >
 inline T* allocate( std::size_t n, int allocID ) noexcept
 {
+  printf ("CALLING ALLOCATE() WITH ID  %d\n", allocID);
   const std::size_t numbytes = n * sizeof( T );
 
 #ifdef AXOM_USE_UMPIRE
@@ -174,6 +175,7 @@ inline T* allocate( std::size_t n, int allocID ) noexcept
 template < typename T >
 inline void deallocate( T*& pointer ) noexcept
 {
+  printf ("CALLING DEALLOCATE() \n");
   if ( pointer == nullptr )
     return;
 
@@ -235,7 +237,16 @@ inline T* reallocate( T* pointer, std::size_t n, int allocID ) noexcept
 
   // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+
+  if (pointer == nullptr)
+  {
+    pointer = static_cast< T* >( rm.reallocate( pointer, numbytes,
+                                                rm.getAllocator( allocID )));
+  }
+  else
+  {
+    pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+  }
 
 #else
 
@@ -249,6 +260,7 @@ inline T* reallocate( T* pointer, std::size_t n, int allocID ) noexcept
 
 #endif
 
+  printf ("REALLOCATE() : MY ALLOCATOR ID WAS %d\n", allocID);
   return pointer;
 }
 

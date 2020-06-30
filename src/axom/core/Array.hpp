@@ -114,6 +114,7 @@ public:
    *  and default allocator ID. 
    *
    */
+  AXOM_HOST_DEVICE
   Array();
 
   /*!
@@ -134,8 +135,9 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
+  AXOM_HOST_DEVICE
   Array( IndexType num_elements, IndexType capacity=0,
-         int allocator_id = DEFAULT_ALLOCATOR_ID );
+         int allocator_id = 0 );
 
   /*! 
    * \brief Copy constructor for an Array instance 
@@ -146,7 +148,7 @@ public:
    *  with data from an external data buffer, the copy-constructed Array 
    *  will have a deep copy of the data and own the data copy. 
    */ 
-  Array( const Array& other, int allocator_id = DEFAULT_ALLOCATOR_ID ); 
+  Array( const Array& other ); 
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -202,7 +204,7 @@ public:
    */ 
   Array& operator=( const Array& other ) 
   { 
-
+    printf ("CALLING COPY ASSIGNMENT OPERATOR \n");
     if ( this != &other ) 
     { 
       m_resize_ratio = other.m_resize_ratio; 
@@ -256,6 +258,7 @@ public:
   /*!
    * Destructor. Frees the associated buffer unless the memory is external.
    */
+  AXOM_HOST_DEVICE
   virtual ~Array();
 
 /// \name Array element access operators
@@ -271,7 +274,7 @@ public:
    * \pre 0 <= idx < m_num_elements
    */
   /// @{
-
+  AXOM_HOST_DEVICE
   T& operator[]( IndexType idx )
   {
     assert(inBounds(idx));
@@ -279,6 +282,7 @@ public:
     return m_data[ idx ];
   }
 
+  AXOM_HOST_DEVICE
   const T& operator[]( IndexType idx ) const
   {
     assert(inBounds(idx));
@@ -518,6 +522,7 @@ public:
    */
   void reserve( IndexType capacity )
   {
+    printf ("CALLING RESERVE\n");
     if ( capacity > m_capacity )
     {
       setCapacity( capacity );
@@ -546,7 +551,7 @@ public:
   /*!
    * \brief Shrink the capacity to be equal to the size.
    */
-  void shrink() { setCapacity( m_num_elements ); }
+  void shrink() { printf ("CALLING SHRINK\n"); setCapacity( m_num_elements ); }
 
   /*!
    * \brief Returns true iff the Array stores no elements.
@@ -558,7 +563,13 @@ public:
   /*!
    * \brief Return the number of elements stored in the data array.
    */
-  IndexType size() const { return m_num_elements; }
+  AXOM_HOST_DEVICE
+  IndexType size() const { 
+    #ifdef AXOM_DEVICE_CODE
+      printf("ATTEMPT TO GET SIZE ON DEVICE!!!");
+    #endif
+    return m_num_elements; 
+  }
 
   /*!
    * \brief Update the number of elements stored in the data array.
@@ -739,7 +750,7 @@ Array< T >::Array( ) :
   m_capacity( 0 ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false ),
-  m_allocator_id( DEFAULT_ALLOCATOR_ID )
+  m_allocator_id( 0 )
 {}
 
 //------------------------------------------------------------------------------
@@ -753,7 +764,10 @@ Array< T >::Array( IndexType num_elements, IndexType capacity,
   m_is_external( false ),
   m_allocator_id( allocator_id )
 {
-  initialize( num_elements, capacity );
+  printf ("CALLING CTOR WITH ALLOC ID PARAM\n");
+  #ifndef AXOM_DEVICE_CODE
+    initialize( num_elements, capacity );
+  #endif
 }
 
 //------------------------------------------------------------------------------
@@ -766,6 +780,7 @@ Array< T >::Array( T* data, IndexType num_elements, IndexType capacity ) :
   m_is_external( true ),
   m_allocator_id( INVALID_ALLOCATOR_ID)
 {
+  printf ("CALLING CTOR WITH POINTER\n");
   m_capacity = (capacity < num_elements) ? num_elements : capacity;
 
   assert( m_num_elements >= 0 );
@@ -775,14 +790,26 @@ Array< T >::Array( T* data, IndexType num_elements, IndexType capacity ) :
 
 //------------------------------------------------------------------------------ 
 template< typename T > 
-Array< T >::Array( const Array& other, int allocator_id ) : 
+Array< T >::Array( const Array& other ) : 
   m_data( nullptr ), 
   m_num_elements( 0 ), 
   m_capacity( 0 ),  
   m_resize_ratio( DEFAULT_RESIZE_RATIO ), 
   m_is_external( false ),
-  m_allocator_id( allocator_id )
+  m_allocator_id( other.getAllocatorID() )
 { 
+  #ifdef AXOM_DEVICE_CODE
+    printf("CALLING FROM DEVICE: ");
+  #endif
+  printf ("CALLING COPY CTOR \n");
+  printf ("COPY CTOR(): other Array ID is %d \n", other.getAllocatorID());
+    printf ("Default allocator ID address in copy constructor() is %p\n",
+          &DEFAULT_ALLOCATOR_ID);
+  // Use default if copying external Array
+  if (m_allocator_id == -1)
+  {
+    m_allocator_id = 0;
+  }
   initialize( other.size(), other.capacity() );  
   std::memcpy( m_data, other.data(),  
                m_num_elements * sizeof(T) ); 
@@ -796,7 +823,7 @@ Array< T >::Array( Array&& other ) :
   m_capacity( 0 ), 
   m_resize_ratio( 0.0 ), 
   m_is_external( false ),
-  m_allocator_id( DEFAULT_ALLOCATOR_ID)
+  m_allocator_id( 0)
 { 
   m_data = other.m_data; 
   m_num_elements = other.m_num_elements; 
@@ -816,12 +843,14 @@ Array< T >::Array( Array&& other ) :
 template< typename T >
 Array< T >::~Array()
 {
-  if ( m_data != nullptr && !m_is_external )
-  {
-    axom::deallocate( m_data );
-  }
+  #ifndef AXOM_DEVICE_CODE
+    if ( m_data != nullptr && !m_is_external )
+    {
+      axom::deallocate( m_data );
+    }
 
-  m_data = nullptr;
+    m_data = nullptr;
+  #endif
 }
 
 //------------------------------------------------------------------------------
@@ -1037,7 +1066,7 @@ template< typename T >
 inline void Array< T >::resize( IndexType new_num_elements )
 {
   assert( new_num_elements >= 0 );
-
+  printf ("CALLING RESIZE\n");
   if ( new_num_elements > m_capacity )
   {
     dynamicRealloc( new_num_elements );
@@ -1089,6 +1118,7 @@ template< typename T >
 inline void Array< T >::initialize( IndexType num_elements,
                                     IndexType capacity )
 {
+  printf ("CALLING INITIALIZE\n");
   assert(num_elements >= 0);
 
   m_num_elements = num_elements;
@@ -1115,6 +1145,7 @@ inline void Array< T >::initialize( IndexType num_elements,
 template< typename T >
 inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
 {
+  printf ("CALLING RESERVEFORINSERT\n");
   assert( n >= 0 );
   assert( pos >= 0 );
   assert( pos <= m_num_elements );
@@ -1154,6 +1185,7 @@ inline void Array< T >::updateNumElements( IndexType new_num_elements )
 template< typename T >
 inline void Array< T >::setCapacity( IndexType new_capacity )
 {
+  printf ("CALLING SET CAPACITY\n");
   assert( new_capacity >= 0 );
 
   if ( m_is_external && new_capacity <= m_capacity )
@@ -1182,6 +1214,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
 template< typename T >
 inline void Array< T >::dynamicRealloc( IndexType new_num_elements )
 {
+  printf ("CALLING DYNAMIC REALLOC \n");
   if (m_is_external)
   {
     std::cerr << "Cannot reallocate an externally provided buffer.";

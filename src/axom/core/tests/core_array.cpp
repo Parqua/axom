@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/Array.hpp"           /* for axom::Array */
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"          /* for_all() traversals */
 #include "axom/core/memory_management.hpp"    /* for alloc() and free() */
 
 #include "gtest/gtest.h"                      /* for TEST and EXPECT_* macros */
@@ -726,6 +728,59 @@ void check_external( Array< T >& v )
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
 }
 
+#ifdef AXOM_USE_RAJA
+template < typename ExecSpace, typename T >
+void check_device( )
+{
+    const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
+
+  printf ("Default allocator ID address in check_device() is %p\n",
+          &DEFAULT_ALLOCATOR_ID);
+  EXPECT_TRUE( axom::execution_space< ExecSpace >::valid() );
+  constexpr int VALUE_1 = -42;
+  constexpr int VALUE_2 =  42;
+  constexpr int N = 256;
+
+  axom::Array< T > v_t( N, N,
+                  axom::execution_space<ExecSpace>::allocatorID() );
+
+  auto& rm = umpire::ResourceManager::getInstance();
+  auto found_allocator = rm.getAllocator(v_t.data());
+  #include <iostream>
+  std::cout << "According to Resource Manager, allocator used is "
+  << found_allocator.getName() << std::endl;
+
+
+  int* a = axom::allocate< int >( N );
+
+  v_t[0] = VALUE_2;
+  for ( int i = 0 ; i < N ; ++i )
+  {
+    v_t[i] = VALUE_1;
+  }
+
+  int allocatorID = v_t.getAllocatorID();
+  EXPECT_EQ( allocatorID, axom::execution_space< ExecSpace >::allocatorID() );
+  printf ("ALLOCATOR ID IS %d\n", allocatorID);
+
+  printf("ENTERING FOR_ALL LOOP...\n");
+  axom::for_all< ExecSpace >( N, AXOM_LAMBDA(axom::IndexType idx)
+  {
+    printf("Size of v_t at index %d is %d\n", idx, v_t.size());
+    // a[idx] = VALUE_2;
+  } );
+  printf("EXITING FOR_ALL LOOP...\n");
+
+  // for ( int i = 0 ; i < N ; ++i )
+  // {
+  //   EXPECT_EQ( v_t[ i ], N );
+  // }
+
+    axom::setDefaultAllocator( current_allocator );
+}
+#endif
+
 }   /* end namespace internal */
 
 //------------------------------------------------------------------------------
@@ -973,11 +1028,13 @@ TEST( core_array, check_move_copy)
     Array< int > v_int_external( ints.data(), size, capacity ); 
 
     Array< int > v_int_copy_ctor( v_int ); 
+    std::cout << "ABLE TO CALL COPY CTOR FOR INT" << std::endl;
     Array< int > v_int_copy_assign( 0, 0 ); 
     v_int_copy_assign = v_int; 
     internal::check_equal( v_int, v_int_copy_ctor ); 
     internal::check_equal( v_int, v_int_copy_assign ); 
 
+    std::cout << "STARTING TO CALL COPY CTOR ON EXTERNAL" << std::endl;
     Array< int > v_int_external_copy_ctor( v_int_external ); 
     Array< int > v_int_external_copy_assign( 0, 0 ); 
     v_int_external_copy_assign = v_int_external; 
@@ -992,6 +1049,7 @@ TEST( core_array, check_move_copy)
     EXPECT_EQ( v_int_copy_assign.data(), nullptr ); 
     EXPECT_EQ( v_int_copy_ctor.data(), nullptr ); 
 
+    std::cout << "--- STARTING DOUBLE SECTION --- " << std::endl;
     /* Check copy and move semantics for Array of doubles */ 
     Array< double > v_double( size, capacity ); 
     v_double.fill( MAGIC_DOUBLE ); 
@@ -1000,6 +1058,7 @@ TEST( core_array, check_move_copy)
     Array< double > v_double_external( doubles.data(), size, capacity ); 
 
     Array< double > v_double_copy_ctor( v_double ); 
+    std::cout << "ABLE TO CALL COPY CTOR FOR DOUBLE" << std::endl;
     Array< double > v_double_copy_assign( 0, 0 ); 
     v_double_copy_assign = v_double; 
     internal::check_equal( v_double, v_double_copy_ctor ); 
@@ -1020,6 +1079,18 @@ TEST( core_array, check_move_copy)
     EXPECT_EQ( v_double_copy_ctor.data(), nullptr ); 
   } 
 }
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+AXOM_CUDA_TEST( core_array, check_cuda )
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec  = axom::CUDA_EXEC<BLOCK_SIZE>;
+
+  internal::check_device< exec, int >( );
+  // internal::check_device< exec, double >( );
+}
+#endif /* AXOM_USE_CUDA && AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 } /* end namespace axom */
 
