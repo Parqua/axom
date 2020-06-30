@@ -132,8 +132,8 @@ public:
   {
     SLIC_ASSERT( bbMin != nullptr);
     SLIC_ASSERT( bbMax != nullptr);
-
-    // Set up the grid resolution from the gridRes array
+ 
+   // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
     const GridCell* pRes =
       (gridRes != nullptr) ? &m_gridRes : nullptr;
