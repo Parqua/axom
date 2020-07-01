@@ -12,6 +12,7 @@
 
 // C/C++ includes
 #include <algorithm>                          /* for std::fill_n */
+#include <vector>
 
 #include <iostream>
 namespace axom
@@ -45,7 +46,6 @@ IndexType calc_new_capacity( Array< T > & v, IndexType increase )
  * \brief Check if two Arrays are copies. Does not check the resize ratio.
  * \param [in] lhs, the first Array to compare.
  * \param [in] rhs, the second Array to compare.
- * \return the new capacity.
  */
 template< typename T >
 void check_copy( const Array< T >& lhs, const Array< T >& rhs )
@@ -53,9 +53,11 @@ void check_copy( const Array< T >& lhs, const Array< T >& rhs )
   EXPECT_EQ( lhs.size(), rhs.size() );
   EXPECT_EQ( lhs.capacity(), rhs.capacity() );
 
+
   const T* lhs_data = lhs.data();
   const T* rhs_data = rhs.data();
   EXPECT_EQ( lhs_data, rhs_data );
+
 }
 
 /*!
@@ -1091,6 +1093,7 @@ AXOM_CUDA_TEST( core_array, check_cuda )
   // internal::check_device< exec, double >( );
 }
 #endif /* AXOM_USE_CUDA && AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
 
 } /* end namespace axom */
 

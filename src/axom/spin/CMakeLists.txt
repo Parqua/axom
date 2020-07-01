@@ -21,6 +21,7 @@ set( spin_headers
      Brood.hpp
      DenseOctreeLevel.hpp
      ImplicitGrid.hpp
+     ImplicitGrid_Accel.hpp
      MortonIndex.hpp
      OctreeBase.hpp
      OctreeLevel.hpp
@@ -41,6 +42,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
 
   set( spin_headers
        ${spin_headers}
+       ImplicitGrid_Accel.hpp
        BVH.hpp
 
        ## internal

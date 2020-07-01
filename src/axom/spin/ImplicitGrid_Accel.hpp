@@ -3,14 +3,18 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SPIN_IMPLICIT_GRID__HPP_
-#define SPIN_IMPLICIT_GRID__HPP_
+#ifndef SPIN_IMPLICIT_GRID_ACCEL__HPP_
+#define SPIN_IMPLICIT_GRID_ACCEL__HPP_
+
+#include "RAJA/RAJA.hpp"
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"  // for clamp functions
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-#include <iostream>
+
+#include "axom/core/utilities/AnnotationMacros.hpp" //for annotations
+#include "axom/core/execution/execution_space.hpp" // for execution spaces for RAJA
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -18,6 +22,12 @@
 #include "axom/spin/RectangularLattice.hpp"
 
 #include <vector>
+
+#ifdef AXOM_USE_CUDA
+#define LAMBDA_FILLER AXOM_HOST_DEVICE
+#else
+#define LAMBDA_FILLER
+#endif
 
 namespace axom
 {
@@ -53,8 +63,8 @@ namespace spin
  * is designed for quick indexing and searching over a static (and relatively
  * small index space) in a relatively coarse grid.
  */
-template<int NDIMS, typename TheIndexType = int>
-class ImplicitGrid
+template<int NDIMS, typename TheIndexType = int, typename ExecSpace=axom::SEQ_EXEC>
+class ImplicitGrid_Accel
 {
 public:
   using IndexType = TheIndexType;
@@ -79,7 +89,7 @@ public:
    * \note Users must call initialize() to initialize the ImplicitGrid
    *       after constructing with the default constructor
    */
-  ImplicitGrid() : m_initialized(false) {}
+  ImplicitGrid_Accel() : m_initialized(false) {}
 
   /*!
    * \brief Constructor for an implicit grid from a bounding box,
@@ -93,7 +103,7 @@ public:
    * \sa initialize() for details on setting grid resolution
    * when \a gridRes is NULL
    */
-  ImplicitGrid(const SpatialBoundingBox& boundingBox,
+  ImplicitGrid_Accel(const SpatialBoundingBox& boundingBox,
                const GridCell* gridRes,
                int numElts)
     : m_bb(boundingBox), m_initialized(false)
@@ -114,7 +124,7 @@ public:
    * \sa initialize() for details on setting grid resolution
    * when \a gridRes is NULL
    */
-  ImplicitGrid(const double* bbMin,
+  ImplicitGrid_Accel(const double* bbMin,
                const double* bbMax,
                const int* gridRes,
                int numElts)
@@ -122,14 +132,13 @@ public:
   {
     SLIC_ASSERT( bbMin != nullptr);
     SLIC_ASSERT( bbMax != nullptr);
-
-    // Set up the grid resolution from the gridRes array
-    //   if NULL, GridCell parameter to initialize should also be NULL
-
+    
     GridCell res;
-    if(gridRes != nullptr){
+    if(gridRes !=nullptr){
       res = GridCell(gridRes, NDIMS);
     }
+    // Set up the grid resolution from the gridRes array
+    //   if NULL, GridCell parameter to initialize should also be NULL
 
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
@@ -161,7 +170,8 @@ public:
                   int numElts)
   {
     SLIC_ASSERT( !m_initialized);
-
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_init");
+    int element_count;
     // Setup Grid Resolution, dealing with possible null pointer
     if(gridRes == nullptr)
     {
@@ -175,24 +185,26 @@ public:
     {
       m_gridRes = GridCell(*gridRes);
     }
-
     // ensure that resolution in each dimension is at least one
-    for(int i=0 ; i< NDIMS ; ++i)
-    {       
+    //for(int i=0 ; i< NDIMS ; ++i)
+    for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
+    {
+      
       m_gridRes[i] = axom::utilities::max( m_gridRes[i], 1);
-    }
+    });
 
     // Setup lattice
     m_bb = boundingBox;
     m_lattice = spin::rectangular_lattice_from_bounding_box(boundingBox,
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
-      
-    for(int i=0 ; i<NDIMS ; ++i)
+    element_count = m_elementSet.size();
+    //for(int i=0 ; i<NDIMS ; ++i)
+    for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
-      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(m_elementSet.size()));
-    }
+      m_binData[i] = BinBitMap(&m_bins[i], BitsetType(element_count));
+    });
 
     // Set the expansion factor for each element to a small fraction of the
     // grid's bounding boxes diameter
@@ -222,29 +234,29 @@ public:
   void insert(SpatialBoundingBox bbox, IndexType idx)
   {
     SLIC_ASSERT(m_initialized);
-
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_insert");
     // Note: We slightly inflate the bbox of the objects.
     //       This effectively ensures that objects on grid boundaries are added
     //       in all nearby grid cells.
 
     bbox.expand(m_expansionFactor);
-    
+
     const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
     const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
-    
+
     for(int i=0 ; i< NDIMS ; ++i)
     {
-      BinBitMap& binData = m_binData[i];
+      //BinBitMap& binData = m_binData[i];
 
       const IndexType lower =
         axom::utilities::clampLower(lowerCell[i], IndexType() );
       const IndexType upper =
         axom::utilities::clampUpper(upperCell[i], highestBin(i) );
 
-      for(int j= lower ; j <= upper ; ++j)
+      for_all< ExecSpace >(lower, upper+1, [=] LAMBDA_FILLER(IndexType j)
       {
-        binData[j].set(idx);
-      }
+        m_binData[i][j].set(idx);
+      });
     }
   }
 
@@ -259,6 +271,7 @@ public:
    */
   BitsetType getCandidates(const SpacePoint& pt) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_candidates_point");
     if(!m_initialized || !m_bb.contains(pt) )
       return BitsetType(0);
 
@@ -269,12 +282,20 @@ public:
     //       This is valid since we've already ensured that pt is in the bbox.
     IndexType idx = axom::utilities::clampUpper(gridCell[0], highestBin(0));
     BitsetType res = m_binData[0][ idx ];
-
-    for(int i=1 ; i< NDIMS ; ++i)
+    
+    BitsetType identity(res.size());
+    identity.flip();
+	
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(res, identity);
+   
+    //for(int i=1 ; i< NDIMS ; ++i)
+    for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType i)
     {
-      idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
-      res &= m_binData[i][idx];
-    }
+      IndexType loop_idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
+      bit_string &= m_binData[i][loop_idx];
+    });
+    res = bit_string.get();
 
     return res;
   }
@@ -290,19 +311,28 @@ public:
    */
   BitsetType getCandidates(const SpatialBoundingBox& box) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_candidates_box");
     if(!m_initialized || !m_bb.intersectsWith(box) )
+    
       return BitsetType(0);
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
 
     BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
-
-    for(int dim=1 ; dim< NDIMS ; ++dim)
+    BitsetType identity(bits.size());
+    identity.flip();
+	
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(bits, identity);
+   
+    
+    for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType dim)
+    //for(int dim=1 ; dim< NDIMS ; ++dim)
     {
-      bits &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
-    }
-
+      bit_string &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
+    });
+    bits = bit_string.get();
     return bits;
   }
 
@@ -325,17 +355,16 @@ public:
    * \sa getCandidates()
    */
   template<typename QueryGeom>
-  std::vector<IndexType> getCandidatesAsArray(const QueryGeom& query) const
+  axom::Array<IndexType> * getCandidatesAsArray(const QueryGeom& query) const
   {
-    std::vector<IndexType> candidatesVec;
-
     BitsetType candidateBits = getCandidates(query);
-    candidatesVec.reserve( candidateBits.count() );
+    axom::Array<IndexType> *candidatesVec = new axom::Array<IndexType>(0, 1, candidateBits.count());
+    
     for(IndexType eltIdx = candidateBits.find_first() ;
-        eltIdx != BitsetType::npos ;
+        eltIdx != BitsetType::npos;
         eltIdx = candidateBits.find_next( eltIdx) )
     {
-      candidatesVec.push_back( eltIdx );
+      candidatesVec->append( eltIdx );
     }
 
     return candidatesVec;
@@ -352,20 +381,25 @@ public:
    * \return True if the bounding box of element \a idx overlaps
    * with GridCell \a gridCell.
    */
+
   bool contains(const GridCell& gridCell, IndexType idx) const
   {
-    bool ret = true;
-
-    if(!m_elementSet.isValidIndex(idx) )
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_contains");
+    bool ret;    
+    if(!m_elementSet.isValidIndex(idx) ){
       ret = false;
-
-    for(int i=0 ; i< NDIMS ; ++i)
+      return ret;
+	}
+    
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitAnd< reduce_pol, unsigned int > tmp_ret(1);
+    //for(int i=0 ; i< NDIMS ; ++i)
+    for_all< ExecSpace >(NDIMS, [=] LAMBDA_FILLER(IndexType i)
     {
-      ret = ret
-            && m_bins[i].isValidIndex(gridCell[i])
-            && m_binData[ i][ gridCell[i] ].test( idx);
-    }
-
+      tmp_ret &= m_bins[i].isValidIndex(gridCell[i])
+               & m_binData[ i][ gridCell[i] ].test( idx);
+    });
+    ret = (bool)tmp_ret.get();
     return ret;
   }
 
@@ -382,6 +416,7 @@ private:
     return m_bins[dim].size()-1;
   }
 
+public:
   /*!
    * \brief Queries the bits that are set for dimension \a dim
    * within the range of boxes \a lower to \a upper
@@ -401,17 +436,25 @@ private:
    */
   BitsetType getBitsInRange(int dim, int lower, int upper) const
   {
+    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_bits_in_range");
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
     lower = axom::utilities::clampLower(lower, IndexType() );
     upper = axom::utilities::clampUpper(upper, highestBin(dim));
+    
+    BitsetType bits;
 
-    BitsetType bits = m_binData[dim][lower];
-    for(int i = lower+1 ; i<= upper ; ++i)
+    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    RAJA::ReduceBitOr< reduce_pol, BitsetType > bit_string( m_binData[dim][lower], BitsetType(m_binData[dim][lower].size()));
+    // for_all< ExecSpace >(lower+1, upper+1, AXOM_LAMBDA(IndexType i)
+    //for(int i = lower+1 ; i<= upper ; ++i)
+    
+    for_all< ExecSpace >(lower+1, upper+1, AXOM_LAMBDA(IndexType i)
     {
-      bits |= m_binData[dim][i];
-    }
+      bit_string |= m_binData[dim][i];
+    });
 
+    bits = bit_string.get();
     return bits;
   }
 
