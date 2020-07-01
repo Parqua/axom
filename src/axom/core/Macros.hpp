@@ -197,8 +197,8 @@
  * \endcode
  */
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                 \
-  className( const className & ) = delete;                                     \
-  className& operator=(const className&) = delete
+  className( className & ) = delete;                                     \
+  className& operator=( className& ) = delete
 
 /*!
  * \def DISABLE_MOVE_AND_ASSIGNMENT(className)

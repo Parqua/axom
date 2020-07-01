@@ -120,6 +120,7 @@ inline void deallocate( T*& p ) noexcept;
  * \param [in] p pointer to memory allocated with allocate/reallocate, or a
  * nullptr.
  * \param [in] n the number of elements to allocate.
+ * \param [in] allocID the ID of the allocator to use if pointer is null
  *
  * \tparam T the type pointer p points to.
  *
@@ -130,7 +131,8 @@ inline void deallocate( T*& p ) noexcept;
  * Umpire's reallocate function.
  */
 template < typename T >
-inline T* reallocate( T* p, std::size_t n ) noexcept;
+inline T* reallocate( T* p, std::size_t n,
+                      int allocID = getDefaultAllocatorID() ) noexcept;
 
 /*!
  * \brief Copies memory from the source to the destination.
@@ -154,6 +156,7 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 template < typename T >
 inline T* allocate( std::size_t n, int allocID ) noexcept
 {
+  printf ("CALLING ALLOCATE() WITH ID  %d\n", allocID);
   const std::size_t numbytes = n * sizeof( T );
 
 #ifdef AXOM_USE_UMPIRE
@@ -172,6 +175,7 @@ inline T* allocate( std::size_t n, int allocID ) noexcept
 template < typename T >
 inline void deallocate( T*& pointer ) noexcept
 {
+  printf ("CALLING DEALLOCATE() \n");
   if ( pointer == nullptr )
     return;
 
@@ -191,7 +195,7 @@ inline void deallocate( T*& pointer ) noexcept
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline T* reallocate( T* pointer, std::size_t n ) noexcept
+inline T* reallocate( T* pointer, std::size_t n, int allocID ) noexcept
 {
   const std::size_t numbytes = n * sizeof( T );
 
@@ -206,7 +210,7 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
   if(n==0)
   {
     axom::deallocate<T>(pointer);
-    pointer = axom::allocate<T>(0);
+    pointer = axom::allocate<T>(0, allocID);
     return pointer;
   }
 
@@ -221,7 +225,7 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
     if(allocRecord && allocRecord->size == 0)
     {
       axom::deallocate<T>(pointer);
-      pointer = axom::allocate<T>(n);
+      pointer = axom::allocate<T>(n, allocID);
       return pointer;
     }
   }
@@ -233,7 +237,16 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 
   // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+
+  if (pointer == nullptr)
+  {
+    pointer = static_cast< T* >( rm.reallocate( pointer, numbytes,
+                                                rm.getAllocator( allocID )));
+  }
+  else
+  {
+    pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+  }
 
 #else
 
@@ -247,6 +260,7 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 
 #endif
 
+  printf ("REALLOCATE() : MY ALLOCATOR ID WAS %d\n", allocID);
   return pointer;
 }
 

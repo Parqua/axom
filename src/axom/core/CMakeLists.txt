@@ -37,8 +37,9 @@ set(core_headers
     numerics/polynomial_solvers.hpp
 
     ## core
-    Array.hpp
     Macros.hpp
+    Array.hpp
+    IteratorBase.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
