@@ -125,11 +125,11 @@ public:
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
+
     GridCell res;
     if(gridRes != nullptr){
       res = GridCell(gridRes, NDIMS);
     }
-
 
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
