@@ -196,12 +196,13 @@ public:
                                                             m_gridRes.array());
     m_elementSet = ElementSet(numElts);
     element_count = m_elementSet.size();
-    //for(int i=0 ; i<NDIMS ; ++i)
-    for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
+    
+    //for_all< ExecSpace >(NDIMS, AXOM_LAMBDA(IndexType i)
+    for(int i=0 ; i<NDIMS ; ++i)
     {
       m_bins[i] = BinSet(m_gridRes[i]);
       m_binData[i] = BinBitMap(&m_bins[i], BitsetType(element_count));
-    });
+    }
 
     // Set the expansion factor for each element to a small fraction of the
     // grid's bounding boxes diameter
@@ -243,17 +244,18 @@ public:
 
     for(int i=0 ; i< NDIMS ; ++i)
     {
-      //BinBitMap& binData = m_binData[i];
+      BinBitMap& binData = m_binData[i];
 
       const IndexType lower =
         axom::utilities::clampLower(lowerCell[i], IndexType() );
       const IndexType upper =
         axom::utilities::clampUpper(upperCell[i], highestBin(i) );
 
-      for_all< ExecSpace >(lower, upper+1, [=] LAMBDA_FILLER(IndexType j)
+      //for_all< ExecSpace >(lower, upper+1, [=] LAMBDA_FILLER(IndexType j)
+      for(int j = lower; j <= upper; ++j)
       {
-        m_binData[i][j].set(idx);
-      });
+        binData[j].set(idx);
+      }
     }
   }
 
@@ -279,20 +281,20 @@ public:
     //       This is valid since we've already ensured that pt is in the bbox.
     IndexType idx = axom::utilities::clampUpper(gridCell[0], highestBin(0));
     BitsetType res = m_binData[0][ idx ];
-    
+    /* 
     BitsetType identity(res.size());
     identity.flip();
 	
     using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
-    RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(res, identity);
-   
-    //for(int i=1 ; i< NDIMS ; ++i)
+    RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(res, identity);)
     for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType i)
+   */
+    
+    for(int i=1 ; i< NDIMS ; ++i)
     {
-      IndexType loop_idx = axom::utilities::clampUpper(gridCell[i], highestBin(i));
-      bit_string &= m_binData[i][loop_idx];
-    });
-    res = bit_string.get();
+      idx = axom::utilities::clampUpper(gridCell[i], highestBin(i)); //Needs to be a new var in RAJA
+      res &= m_binData[i][idx];
+    }
 
     return res;
   }
@@ -315,8 +317,9 @@ public:
 
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
-
+    
     BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
+    /*
     BitsetType identity(bits.size());
     identity.flip();
 	
@@ -325,11 +328,12 @@ public:
    
     
     for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType dim)
-    //for(int dim=1 ; dim< NDIMS ; ++dim)
+    */
+    for(int dim=1 ; dim< NDIMS ; ++dim)
     {
-      bit_string &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
-    });
-    bits = bit_string.get();
+      bits &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
+    }
+    //bits = bit_string.get();
     return bits;
   }
 
@@ -382,21 +386,22 @@ public:
   bool contains(const GridCell& gridCell, IndexType idx) const
   {
     AXOM_PERF_MARK_FUNCTION("implicitgrid_contains");
-    bool ret;    
+    bool ret = true;    
     if(!m_elementSet.isValidIndex(idx) ){
       ret = false;
       return ret;
 	}
-    
+    /*
     using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
     RAJA::ReduceBitAnd< reduce_pol, unsigned int > tmp_ret(1);
-    //for(int i=0 ; i< NDIMS ; ++i)
     for_all< ExecSpace >(NDIMS, [=] LAMBDA_FILLER(IndexType i)
+    */
+    for(int i=0 ; i< NDIMS ; ++i)
     {
-      tmp_ret &= m_bins[i].isValidIndex(gridCell[i])
-               & m_binData[ i][ gridCell[i] ].test( idx);
-    });
-    ret = (bool)tmp_ret.get();
+      ret = ret && m_bins[i].isValidIndex(gridCell[i])
+               && m_binData[ i][ gridCell[i] ].test( idx);
+    }
+    //ret = (bool)tmp_ret.get();
     return ret;
   }
 
@@ -439,19 +444,16 @@ public:
     lower = axom::utilities::clampLower(lower, IndexType() );
     upper = axom::utilities::clampUpper(upper, highestBin(dim));
     
-    BitsetType bits;
+    BitsetType bits = m_binData[dim][lower];
 
-    using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
-    RAJA::ReduceBitOr< reduce_pol, BitsetType > bit_string( m_binData[dim][lower], BitsetType(m_binData[dim][lower].size()));
+    //using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+    //RAJA::ReduceBitOr< reduce_pol, BitsetType > bit_string( m_binData[dim][lower], BitsetType(m_binData[dim][lower].size()));
     // for_all< ExecSpace >(lower+1, upper+1, AXOM_LAMBDA(IndexType i)
-    //for(int i = lower+1 ; i<= upper ; ++i)
-    
-    for_all< ExecSpace >(lower+1, upper+1, AXOM_LAMBDA(IndexType i)
+    for(int i = lower+1 ; i<= upper ; ++i)
     {
-      bit_string |= m_binData[dim][i];
-    });
+      bits |= m_binData[dim][i];
+    }
 
-    bits = bit_string.get();
     return bits;
   }
 
