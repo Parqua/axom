@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 #include "axom/mint/mesh/RectilinearMesh.hpp"
 
-#include "axom/core/Array.hpp"               // for axom::Array
+#include "axom/mint/core/Array.hpp"          // for mint::Array
 #include "axom/mint/mesh/blueprint.hpp"      // for blueprint functions
 #include "axom/mint/config.hpp"              // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"      // for STRUCTURED_RECTILINEAR_MESH
