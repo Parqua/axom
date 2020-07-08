@@ -256,7 +256,7 @@ bool BitSet::operator==(const BitSet & other) const
   {
     return false;
   }
-  bool tester = false;
+  bool tester = true;
   for(int i = 0; i < m_numWords; i++){
         tester = tester && (m_data[i] == other.m_data[i]);
   }
