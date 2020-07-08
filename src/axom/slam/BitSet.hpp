@@ -148,7 +148,6 @@ public:
 
     m_data = ArrayType(m_numWords);
     m_data.fill(0);
-    fprintf(stderr,"The array is %llu bigs.\n\n\n", m_data[0]);
   }
 
   /** \brief Copy constructor for BitSet class */
