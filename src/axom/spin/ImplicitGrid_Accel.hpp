@@ -368,7 +368,7 @@ public:
         eltIdx != BitsetType::npos;
         eltIdx = candidateBits.find_next( eltIdx) )
     {
-      candidatesVec->append( eltIdx );
+      candidatesVec->push_back( eltIdx );
     }
 
     return candidatesVec;

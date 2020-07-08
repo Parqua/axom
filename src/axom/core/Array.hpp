@@ -168,24 +168,6 @@ public:
    */ 
   Array( Array&& other );
 
-  /*!
-   * \brief Copy constructor for an Array instance
-   *
-   * \note If you use the copy constructor on an argument Array
-   *  with data from an external data buffer, the copy-constructed Array
-   *  will have a deep copy of the data and own the data copy.
-   */
-  Array( const Array& other );
-
-  /*!
-   * \brief Move constructor for an Array instance
-   *
-   * \note If you use the move constructor on an argument Array with an
-   *  external data buffer, the move-constructed Array will wrap the external
-   *  data buffer and the argument Array will be left in a valid empty state.
-   */
-  Array( Array&& other );
-
 /// @}
 
 /// \name External Storage Array Constructors
@@ -281,64 +263,6 @@ public:
 
 /// @}
 
-/// \name Array copy and move operators
-/// @{
-
-  /*!
-   * \brief Copy assignment operator for Array
-   *
-   * \note If you use the copy assignment operator on an argument Array
-   *  with data from an external data buffer, the copy-assigned Array
-   *  will have a deep copy of the data and own the data copy.
-   */
-  Array& operator=( const Array& other )
-  {
-    if ( this != &other )
-    {
-      m_resize_ratio = other.m_resize_ratio;
-      m_is_external = false;
-      initialize(other.size(), other.numComponents(), other.capacity());
-      std::memcpy(m_data, other.getData(), 
-                  m_num_tuples * m_num_components * sizeof(T));
-    }
-
-    return *this;
-  }
-
-  /*!
-   * \brief Move assignment operator for Array
-   *
-   * \note If you use the move assignment operator on an argument Array with
-   *  an external data buffer, the move-assigned Array will wrap the external
-   *  data buffer and the argument Array will be left in a valid empty state.
-   */
-  Array& operator=( Array&& other )
-  {
-    if ( this != &other )
-    {
-      if ( m_data != nullptr && !m_is_external )
-      {
-        axom::deallocate( m_data );
-      }
-      m_data = other.m_data;
-      m_num_tuples = other.m_num_tuples;
-      m_num_components = other.m_num_components;
-      m_capacity = other.m_capacity;
-      m_resize_ratio = other.m_resize_ratio;
-      m_is_external = other.m_is_external;
-
-      other.m_data = nullptr;
-      other.m_num_tuples = 0;
-      other.m_num_components = 1;
-      other.m_capacity = 0;
-      other.m_resize_ratio = DEFAULT_RESIZE_RATIO;
-      other.m_is_external = false;
-    }
-
-    return *this;
-  }
-
-/// @}
 
   /*!
    * Destructor. Frees the associated buffer unless the memory is external.
