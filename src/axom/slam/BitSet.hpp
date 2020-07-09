@@ -12,6 +12,7 @@
 #ifndef SLAM_BITSET_H_
 #define SLAM_BITSET_H_
 
+#include "axom/core/Array.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
@@ -113,7 +114,7 @@ public:
   using Word = axom::uint64;
 
   // Use vector for initial implementation -- TODO: update using a policy
-  using ArrayType = std::vector<Word>;
+  using ArrayType = axom::Array<Word>;
 
   static const Index npos;
 
@@ -146,6 +147,7 @@ public:
                  : 1 + (m_numBits - 1) / BITS_PER_WORD;
 
     m_data = ArrayType(m_numWords);
+    m_data.fill(0);
   }
 
   /** \brief Copy constructor for BitSet class */
@@ -406,7 +408,7 @@ private:
   }
 
 private:
-  ArrayType m_data;
+  ArrayType m_data = ArrayType(0);
 
   int m_numBits;
   int m_numWords;
