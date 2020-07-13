@@ -271,9 +271,9 @@ public:
    * The bits of \a bSet are set if their corresponding element bounding boxes
    * overlap the grid cell containing \a pt.
    */
+  AXOM_HOST_DEVICE
   BitsetType getCandidates(const SpacePoint& pt) const
   {
-    AXOM_PERF_MARK_FUNCTION("implicitgrid_get_candidates_point");
     if(!m_initialized || !m_bb.contains(pt) )
       return BitsetType(0);
 
@@ -287,7 +287,6 @@ public:
     /* 
     BitsetType identity(res.size());
     identity.flip();
-	
     using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
     RAJA::ReduceBitAnd< reduce_pol, BitsetType > bit_string(res, identity);)
     for_all< ExecSpace >(1, NDIMS, AXOM_LAMBDA(IndexType i)
