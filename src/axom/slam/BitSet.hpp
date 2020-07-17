@@ -114,8 +114,8 @@ public:
   using Word = axom::uint64;
 
   // Use vector for initial implementation -- TODO: update using a policy
-  using ArrayType = axom::Array<Word>;
-
+  //using ArrayType = axom::Array<Word>;
+  
   static const Index npos;
 
 private:
@@ -146,8 +146,7 @@ public:
                  ? 1
                  : 1 + (m_numBits - 1) / BITS_PER_WORD;
 
-    m_data = ArrayType(m_numWords);
-    m_data.fill(0);
+    m_data = new Word[m_numWords]();
   }
 
   /** \brief Copy constructor for BitSet class */
@@ -408,7 +407,7 @@ private:
   }
 
 private:
-  ArrayType m_data = ArrayType(0);
+  Word* m_data;
 
   int m_numBits;
   int m_numWords;
