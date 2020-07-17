@@ -151,10 +151,12 @@ public:
 
   /** \brief Copy constructor for BitSet class */
   BitSet(const BitSet& other) :
-    m_data(other.m_data),
     m_numBits(other.m_numBits),
     m_numWords(other.m_numWords)
-  {}
+  {
+    m_data = new Word[m_numWords];
+    memcpy(m_data, other.m_data, m_numWords*sizeof(Word));
+  }
 
   /** \brief Equality operator for two bitsets */
   bool operator==(const BitSet & other) const;
@@ -174,9 +176,11 @@ public:
   {
     if (this != &other)
     {
-      m_data = other.m_data;
       m_numBits = other.m_numBits;
       m_numWords = other.m_numWords;
+      delete[] m_data;
+      m_data = new Word[m_numWords];
+      memcpy(m_data, other.m_data, m_numWords*sizeof(Word));
     }
     return *this;
   }
