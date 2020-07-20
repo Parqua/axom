@@ -136,6 +136,7 @@ public:
    * \post bset.size() == numBits
    * \post All bits will be off
    */
+  AXOM_HOST_DEVICE
   explicit BitSet(int numBits = 0)
   {
     SLIC_ASSERT_MSG(numBits >= 0,
@@ -150,6 +151,7 @@ public:
   }
 
   /** \brief Copy constructor for BitSet class */
+  AXOM_HOST_DEVICE
   BitSet(const BitSet& other) :
     m_numBits(other.m_numBits),
     m_numWords(other.m_numWords)
@@ -172,6 +174,7 @@ public:
   /// @{
 
   /** \brief Assignment operator for BitSet class */
+  AXOM_HOST_DEVICE
   BitSet& operator=(const BitSet& other)
   {
     if (this != &other)
@@ -301,6 +304,7 @@ public:
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
+  AXOM_HOST_DEVICE
   void clear(Index idx) { getWord(idx) &= ~mask(idx); }
 
   /**
@@ -308,6 +312,7 @@ public:
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
+  AXOM_HOST_DEVICE
   void set(Index idx)   { getWord(idx) |= mask(idx);  }
 
   /**
@@ -315,6 +320,7 @@ public:
    *
    * \pre \a idx must be between 0 and bitset.size()
    */
+  AXOM_HOST_DEVICE
   void flip(Index idx)  { getWord(idx) ^= mask(idx);  }
 
   /**
@@ -323,6 +329,7 @@ public:
    * \return True if bit \idx is set, false otherwise
    * \pre \a idx must be between 0 and bitset.size()
    */
+  AXOM_HOST_DEVICE
   bool test(Index idx)  const
   {
     return (getWord(idx) & mask(idx)) != Word(0);
@@ -337,6 +344,7 @@ private:
    * \param checkIndexValid Option to enable bounds checking to ensure
    * that \a idx is within range [0, size() )
    */
+  AXOM_HOST_DEVICE
   Word& getWord(Index idx, bool checkIndexValid = true)
   {
     if(checkIndexValid)
@@ -350,6 +358,7 @@ private:
    * \brief Const implementation of getWord()
    * \sa getWord()
    */
+  AXOM_HOST_DEVICE
   const Word& getWord(Index idx, bool checkIndexValid = true) const
   {
     if (checkIndexValid)
@@ -365,6 +374,7 @@ private:
    *
    * \param idx The index of the desired bit
    */
+  AXOM_HOST_DEVICE
   Word mask(Index idx) const
   {
     const Index wOffset = idx % BITS_PER_WORD;
@@ -377,6 +387,7 @@ private:
    * This function is only valid when isLasteWordFull() is false
    * \sa isLastWordFull()
    */
+  AXOM_HOST_DEVICE
   Word lastWordMask() const
   {
     return mask(m_numBits ) - 1;
@@ -387,6 +398,7 @@ private:
    *
    * \note This function is a no-op in Release builds
    */
+  AXOM_HOST_DEVICE
   void checkValidIndex(Index idx) const
   {
     AXOM_DEBUG_VAR(idx);
@@ -404,6 +416,7 @@ private:
    * The last word is full when the bitset has exactly
    * m_words * BITS_PER_WORD bits
    */
+  AXOM_HOST_DEVICE
   bool isLastWordFull() const
   {
     const int lg = (1 << (LG_BITS_PER_WORD))-1;

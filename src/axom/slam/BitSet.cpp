@@ -13,6 +13,7 @@ namespace slam
 
 BitSet::Index const BitSet::npos = -2;
 
+AXOM_HOST_DEVICE
 void BitSet::clear()
 {
   for (int i = 0 ; i < m_numWords ; ++i)
@@ -21,6 +22,7 @@ void BitSet::clear()
   }
 }
 
+AXOM_HOST_DEVICE
 void BitSet::set()
 {
   if (m_numBits == 0)
@@ -40,6 +42,7 @@ void BitSet::set()
                            : lastWordMask();
 }
 
+AXOM_HOST_DEVICE
 void BitSet::flip()
 {
   if (m_numBits == 0)
@@ -59,6 +62,7 @@ void BitSet::flip()
                             : lastWordMask();
 }
 
+AXOM_HOST_DEVICE
 int BitSet::count() const
 {
   int ctr = 0;
@@ -70,6 +74,7 @@ int BitSet::count() const
   return ctr;
 }
 
+AXOM_HOST_DEVICE
 bool BitSet::isValid() const
 {
   bool valid = true;
@@ -111,11 +116,13 @@ bool BitSet::isValid() const
   return valid;
 }
 
+AXOM_HOST_DEVICE
 BitSet::Index BitSet::find_first() const
 {
   return find_next(-1);
 }
 
+AXOM_HOST_DEVICE
 BitSet::Index BitSet::find_next(Index idx) const
 {
   // Handle boundary cases
@@ -158,6 +165,7 @@ BitSet::Index BitSet::find_next(Index idx) const
   return BitSet::npos;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator|=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -174,6 +182,7 @@ BitSet& BitSet::operator|=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator&=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -190,6 +199,7 @@ BitSet& BitSet::operator&=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator^=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -206,6 +216,7 @@ BitSet& BitSet::operator^=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator-=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -222,6 +233,7 @@ BitSet& BitSet::operator-=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator|(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -229,6 +241,7 @@ BitSet operator|(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator&(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -236,6 +249,7 @@ BitSet operator&(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator^(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -243,6 +257,7 @@ BitSet operator^(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator-(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -250,6 +265,7 @@ BitSet operator-(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 bool BitSet::operator==(const BitSet & other) const
 {
   if (size() != other.size() || m_numBits != other.m_numBits)
