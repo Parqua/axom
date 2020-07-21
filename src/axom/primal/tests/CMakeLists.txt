@@ -10,6 +10,7 @@ set( primal_tests
     primal_bezier_curve.cpp
     primal_bezier_intersect.cpp
     primal_boundingbox.cpp
+    primal_boundingboxcuda.cpp
     primal_clip.cpp
     primal_closest_point.cpp
     primal_compute_bounding_box.cpp

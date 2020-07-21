@@ -79,12 +79,14 @@ public:
    * is set to the smallest possible point.  This way adding any point resets
    * the bounds to a valid range.
    */
+  AXOM_HOST_DEVICE
   BoundingBox() : m_min( PointType( std::numeric_limits< T >::max() ) ),
     m_max( PointType( std::numeric_limits< T >::lowest() ) ) { }
 
   /*!
    * \brief Constructor. Creates a bounding box containing a single point
    */
+  AXOM_HOST_DEVICE
   BoundingBox( const PointType& pt )
     : m_min( pt), m_max( pt) { }
 
@@ -100,6 +102,7 @@ public:
    * \brief Constructor. Creates a bounding box with a given min and max point
    *  The code ensures that the bounds are valid.
    */
+  AXOM_HOST_DEVICE
   BoundingBox( const PointType& lowerPt, const PointType& upperPt )
     : m_min( lowerPt), m_max( upperPt)
   { this->checkAndFixBounds(); }
@@ -108,11 +111,13 @@ public:
    * \brief Copy Constructor.
    * \param [in] other The bounding box to copy
    */
+  AXOM_HOST_DEVICE
   BoundingBox( const BoundingBox& other ) { *this = other; };
 
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~BoundingBox() { }
 
   /*!
@@ -125,24 +130,28 @@ public:
    * \brief Returns const reference to the min corner of the bounding box.
    * \return const reference to the min corner of the bounding box.
    */
+  AXOM_HOST_DEVICE
   const PointType& getMin() const { return m_min; };
 
   /*!
    * \brief Returns const reference to the max corner of the bounding box.
    * \return const reference to the max corner of the bounding box.
    */
+  AXOM_HOST_DEVICE
   const PointType& getMax() const { return m_max; };
 
   /*!
    * \brief Returns the centroid (midpoint) of the bounding box.
    * \return Point at the bounding box centroid.
    */
+  AXOM_HOST_DEVICE
   PointType getCentroid() const { return PointType::midpoint(m_min, m_max); }
 
   /*!
    * \brief Returns a vector from the min to the max points of the bounding box
    * \return Vector from min point to max point of bounding box.
    */
+  AXOM_HOST_DEVICE
   VectorType range() const { return VectorType(m_min, m_max); };
 
   /*!
@@ -165,6 +174,7 @@ public:
    * \return d the dimension of this bounding box instance.
    * \post d >= 1.
    */
+  AXOM_HOST_DEVICE
   int dimension() const { return NDIMS; };
 
   /*!
@@ -336,12 +346,14 @@ private:
    * \brief Sets the min point for this bounding box instance.
    * \param [in] newMin the new min point.
    */
+  AXOM_HOST_DEVICE
   inline void setMin( const PointType& newMin ) { m_min = newMin; };
 
   /*!
    * \brief Sets the max point for this bounding box instance.
    * \param [in] newMax the new max point.
    */
+  AXOM_HOST_DEVICE
   inline void setMax( const PointType& newMax ) { m_max = newMax; };
 
   /*!
@@ -370,6 +382,7 @@ namespace primal
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 BoundingBox< T,NDIMS >&
 BoundingBox< T,NDIMS >::operator=(const BoundingBox& rhs )
 {
@@ -386,6 +399,7 @@ BoundingBox< T,NDIMS >::operator=(const BoundingBox& rhs )
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
+AXOM_HOST_DEVICE
 bool BoundingBox< T,
                   NDIMS >::contains( const Point< OtherT,NDIMS >& otherPt) const
 {
@@ -405,6 +419,7 @@ bool BoundingBox< T,
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+AXOM_HOST_DEVICE
 BoundingBox< T, NDIMS >::BoundingBox(const PointType* pts, int n)
 {
   if (n <= 0)
@@ -425,6 +440,7 @@ BoundingBox< T, NDIMS >::BoundingBox(const PointType* pts, int n)
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
+AXOM_HOST_DEVICE
 bool BoundingBox< T, NDIMS >::contains(
   const BoundingBox< OtherT,NDIMS >& otherBB) const
 {
@@ -434,6 +450,7 @@ bool BoundingBox< T, NDIMS >::contains(
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherType  >
+AXOM_HOST_DEVICE
 bool BoundingBox< T,NDIMS >::intersectsWith(
   const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
@@ -454,6 +471,7 @@ bool BoundingBox< T,NDIMS >::intersectsWith(
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 bool BoundingBox< T,NDIMS >::isValid() const
 {
   for ( int dim=0 ; dim < NDIMS ; ++dim)
@@ -470,6 +488,7 @@ bool BoundingBox< T,NDIMS >::isValid() const
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
+AXOM_HOST_DEVICE
 void BoundingBox< T, NDIMS >::addPoint(
   const Point< OtherT,NDIMS >& pt)
 {
@@ -495,6 +514,7 @@ void BoundingBox< T, NDIMS >::addPoint(
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
 template < typename OtherT >
+AXOM_HOST_DEVICE
 void BoundingBox< T, NDIMS >::addBox(
   const BoundingBox< OtherT,NDIMS >& bbox)
 {
@@ -504,6 +524,7 @@ void BoundingBox< T, NDIMS >::addBox(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+AXOM_HOST_DEVICE
 int BoundingBox< T,NDIMS >::getLongestDimension() const
 {
   SLIC_ASSERT( this->isValid() );
@@ -527,6 +548,7 @@ int BoundingBox< T,NDIMS >::getLongestDimension() const
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 BoundingBox< T, NDIMS >& BoundingBox< T, NDIMS >::expand(T expansionAmount)
 {
   for ( int dim=0 ; dim < NDIMS ; ++dim )
@@ -541,6 +563,7 @@ BoundingBox< T, NDIMS >& BoundingBox< T, NDIMS >::expand(T expansionAmount)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::scale(double scaleFactor)
 {
   const PointType midpoint = getCentroid();
@@ -556,6 +579,7 @@ BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::scale(double scaleFactor)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::shift(const VectorType& disp)
 {
   m_min.array() += disp.array();
@@ -566,6 +590,7 @@ BoundingBox< T,NDIMS >& BoundingBox< T, NDIMS >::shift(const VectorType& disp)
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 void BoundingBox< T,NDIMS >::checkAndFixBounds()
 {
   for (int dim=0 ; dim < NDIMS ; ++dim )
@@ -580,6 +605,7 @@ void BoundingBox< T,NDIMS >::checkAndFixBounds()
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 void BoundingBox< T,NDIMS >::clear()
 {
   m_min = PointType( std::numeric_limits< T >::max() );
@@ -588,6 +614,7 @@ void BoundingBox< T,NDIMS >::clear()
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
 {
   os <<"{ min:"<<m_min <<"; max:"<< m_max <<"; range:"<< range() << " }";
@@ -596,6 +623,7 @@ std::ostream& BoundingBox< T,NDIMS >::print(std::ostream& os) const
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 BoundingBox< T, NDIMS >& BoundingBox< T,NDIMS >::intersect(
   const BoundingBox& otherBox)
 {
@@ -616,6 +644,7 @@ BoundingBox< T, NDIMS >& BoundingBox< T,NDIMS >::intersect(
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 void BoundingBox< T,NDIMS >::bisect( BoxType& right,
                                      BoxType& left,
                                      int dim ) const
@@ -650,6 +679,7 @@ void BoundingBox< T,NDIMS >::bisect( BoxType& right,
 //    Implementation of static methods
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 inline void BoundingBox< T,NDIMS >::getPoints(
   const BoundingBox< T,2 >& bb,
   std::vector< Point< T,2 > >& pnts )
@@ -666,6 +696,7 @@ inline void BoundingBox< T,NDIMS >::getPoints(
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 inline void BoundingBox< T,NDIMS >::getPoints(
   const BoundingBox< T,3 >& bb,
   std::vector< Point< T,3 > >& pnts )
@@ -689,7 +720,9 @@ inline void BoundingBox< T,NDIMS >::getPoints(
 /// Free functions implementing comparison and arithmetic operators
 //------------------------------------------------------------------------------
 
+
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 bool operator==( const BoundingBox< T,NDIMS >& lhs,
                  const BoundingBox< T,NDIMS >& rhs)
 {
@@ -698,6 +731,7 @@ bool operator==( const BoundingBox< T,NDIMS >& lhs,
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 bool operator!=( const BoundingBox< T, NDIMS >& lhs,
                  const BoundingBox< T, NDIMS >& rhs)
 {
@@ -706,6 +740,7 @@ bool operator!=( const BoundingBox< T, NDIMS >& lhs,
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 std::ostream& operator<<(std::ostream & os, const BoundingBox< T,NDIMS > & bb)
 {
   return bb.print(os);
