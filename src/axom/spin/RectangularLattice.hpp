@@ -66,6 +66,7 @@ public:
    *
    * \note Sets the origin to 0 and spacing to 1 in each dimension
    */
+  AXOM_HOST_DEVICE
   RectangularLattice()
     : m_origin(SpaceCoordType(0)),
     m_spacing( SpacePoint(SpaceCoordType(1)) ),
@@ -78,6 +79,7 @@ public:
    * \param origin The lattice's origin
    * \note Spacing will be set to default (vector of ones)
    */
+  AXOM_HOST_DEVICE
   RectangularLattice(const SpacePoint& origin)
     : m_origin(origin),
     m_spacing( SpacePoint(SpaceCoordType(1)) ),
@@ -94,6 +96,7 @@ public:
    * If they are less than EPS = 1E-50, the lattice will be degenerate in
    * that dimension.
    */
+  AXOM_HOST_DEVICE
   RectangularLattice(const SpacePoint& origin,
                      const SpaceVector & spacing)
     : m_origin(origin), m_spacing(spacing)
@@ -120,6 +123,7 @@ public:
    * If they are less than EPS = 1E-50, the lattice will be degenerate in
    * that dimension.
    */
+  AXOM_HOST_DEVICE
   RectangularLattice(SpaceCoordType* origin_data,
                      SpaceCoordType* spacing_data)
   {
@@ -138,12 +142,15 @@ public:
   }
 
   /*! Accessor for lattice origin   */
+  AXOM_HOST_DEVICE
   const SpacePoint&  origin() const { return m_origin; }
 
   /*! Accessor for lattice spacing   */
+  AXOM_HOST_DEVICE
   const SpaceVector& spacing() const { return m_spacing; }
 
   /*! Returns the lattice cell associated with the given space point pt */
+  AXOM_HOST_DEVICE
   GridCell gridCell(const SpacePoint& pt) const
   {
     GridCell cell;
@@ -160,6 +167,7 @@ public:
   }
 
   /*! Returns the space point associated with lowest corner of GridCell cell */
+  AXOM_HOST_DEVICE
   SpacePoint spacePoint(const GridCell& cell) const
   {
     SpacePoint pt;
@@ -176,6 +184,7 @@ public:
    *
    * \note The bounding box covers all points in space that map to gridCell
    */
+  AXOM_HOST_DEVICE
   SpatialBoundingBox cellBounds(const GridCell& cell) const
   {
     return SpatialBoundingBox( spacePoint(cell),
@@ -204,6 +213,7 @@ private:
    *
    * as long as m_spacing is sufficiently large. Otherwise, it will be zero.
    */
+  AXOM_HOST_DEVICE
   void initializeSpacingAndInvSpacing()
   {
     constexpr SpaceCoordType EPS = 1.0e-50;
@@ -249,6 +259,7 @@ private:
  * that dimension.
  */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+AXOM_HOST_DEVICE
 RectangularLattice< NDIMS, SpaceCoordType, CellCoordType >
 rectangular_lattice_from_bounding_box(
   const primal::BoundingBox< SpaceCoordType, NDIMS >& bbox,
@@ -279,6 +290,7 @@ rectangular_lattice_from_bounding_box(
 
 /*! Equality operator on two RectangularLattices */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+AXOM_HOST_DEVICE
 bool operator==(
   const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs,
   const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
@@ -288,6 +300,7 @@ bool operator==(
 
 /*! Inequality operator on two RectangularLattices */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+AXOM_HOST_DEVICE
 bool operator!=(
   const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& lhs,
   const RectangularLattice< NDIMS,SpaceCoordType,CellCoordType >& rhs )
@@ -297,6 +310,7 @@ bool operator!=(
 
 /*! Stream output operator on a RectangularLattice */
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
+AXOM_HOST_DEVICE
 std::ostream& operator<<(
   std::ostream & os,
   const RectangularLattice< NDIMS, SpaceCoordType, CellCoordType > & lattice)
