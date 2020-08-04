@@ -30,12 +30,14 @@ class Point;
  * \brief Equality comparison operator for points
  */
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 bool operator==(const Point< T, NDIMS > & lhs, const Point< T, NDIMS >& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
  */
 template < typename T,int NDIMS >
+AXOM_HOST_DEVICE
 bool operator!=(const Point< T, NDIMS > & lhs, const Point< T, NDIMS >& rhs);
 
 /*!
@@ -178,7 +180,13 @@ public:
    */
   AXOM_HOST_DEVICE
   friend inline bool operator==(const Point& lhs, const Point& rhs)
-  { return lhs.m_components == rhs.m_components; }
+  { 
+    bool tester = true;
+    for(int i = 0; i < NDIMS; i++){
+      tester = tester && (lhs.m_components[i] == rhs.m_components[i]);
+    } 
+    return tester; 
+  }
 
   /*!
    * \brief Inequality operator for points
