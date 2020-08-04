@@ -114,12 +114,14 @@ public:
    * \return d the dimension of the point.
    * \post d >= 1.
    */
+  AXOM_HOST_DEVICE
   static int dimension() { return NDIMS; };
 
   /*!
    * \brief Assignment operator.
    * \param [in] rhs a point instance on the right hand side.
    */
+  AXOM_HOST_DEVICE
   Point& operator=(const Point& rhs)
   { m_components=rhs.m_components; return *this; }
 
@@ -146,7 +148,9 @@ public:
   /*!
    * \brief Returns a pointer to the underlying data.
    */
+  AXOM_HOST_DEVICE
   const T* data() const { return m_components.data(); }
+  AXOM_HOST_DEVICE
   T* data()             { return m_components.data(); }
 
   ///@}
@@ -166,17 +170,20 @@ public:
    * \pre The user needs to make sure that the array has been allocated
    * and has sufficient space for NDIMS coordinates.
    */
+  AXOM_HOST_DEVICE
   void to_array(T* arr) const { m_components.to_array(arr); }
 
   /*!
    * \brief Equality comparison operator for points
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator==(const Point& lhs, const Point& rhs)
   { return lhs.m_components == rhs.m_components; }
 
   /*!
    * \brief Inequality operator for points
    */
+  AXOM_HOST_DEVICE
   friend inline bool operator!=(const Point& lhs, const Point& rhs)
   { return !(lhs == rhs); }
 
@@ -203,6 +210,7 @@ public:
    * \param [in] B user-supplied point
    * \return p point at the midpoint A and B.
    */
+  AXOM_HOST_DEVICE
   static Point midpoint( const Point& A, const Point& B );
 
   /*!
@@ -225,11 +233,13 @@ public:
    * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
    * \post The return point, P, and the user-supplied points A, B are collinear.
    */
+  AXOM_HOST_DEVICE
   static Point lerp( const Point& A, const Point& B, T alpha);
 
   /*!
    * \brief Helper function to return a point whose coordinates are all 0
    */
+  AXOM_HOST_DEVICE
   static Point zero() { return Point(); }
 
   /*!
@@ -238,6 +248,7 @@ public:
    * (with the appropriate casting) and is only valid for Points with
    * a numerical type (i.e. where static_cast<T>(1) is valid.
    */
+  AXOM_HOST_DEVICE
   static Point ones() { return Point(static_cast< T >(1)); }
 
 private:
@@ -267,6 +278,7 @@ namespace primal
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+AXOM_HOST_DEVICE
 inline Point< T, NDIMS > Point< T,NDIMS >::make_point( const T& x,
                                                        const T& y,
                                                        const T& z )
@@ -277,6 +289,7 @@ inline Point< T, NDIMS > Point< T,NDIMS >::make_point( const T& x,
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+AXOM_HOST_DEVICE
 inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
   const Point< T,NDIMS >& A,
   const Point< T,NDIMS >& B )
@@ -294,6 +307,7 @@ inline Point< T,NDIMS > Point< T,NDIMS >::midpoint(
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
+AXOM_HOST_DEVICE
 inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
   const Point< T,NDIMS >& A,
   const Point< T,NDIMS >& B,
