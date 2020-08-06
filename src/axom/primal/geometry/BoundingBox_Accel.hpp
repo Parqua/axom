@@ -324,7 +324,6 @@ public:
    *
    * \endverbatim
    */
-  AXOM_HOST_DEVICE
   static void getPoints( const BoundingBoxAccel< T,2 >& bb,
                          std::vector< Point< T,2 > >& pnts );
 
@@ -349,8 +348,7 @@ public:
    *
    * \endverbatim
    */
-  AXOM_HOST_DEVICE
-  static void getPoints( const BoundingBoxAccel< T,3 >& bb,
+    static void getPoints( const BoundingBoxAccel< T,3 >& bb,
                          std::vector< Point< T,3 > >& pnts );
 
   /// @}
@@ -609,11 +607,15 @@ template < typename T,int NDIMS >
 AXOM_HOST_DEVICE
 void BoundingBoxAccel< T,NDIMS >::checkAndFixBounds()
 {
+  T swapper;
   for (int dim=0 ; dim < NDIMS ; ++dim )
   {
     if ( m_min[dim] > m_max[dim] )
     {
-      std::swap( m_min[dim], m_max[dim] );
+      //std::swap( m_min[dim], m_max[dim] );
+      swapper = m_min[dim];
+      m_min[dim] = m_max[dim];
+      m_max[dim] = swapper;
     }
   }
 
@@ -645,8 +647,14 @@ BoundingBoxAccel< T, NDIMS >& BoundingBoxAccel< T,NDIMS >::intersect(
 
   for (int i=0 ; i< NDIMS ; ++i)
   {
-    m_min[i] = std::max( m_min[i], otherBox.m_min[i]);
-    m_max[i] = std::min( m_max[i], otherBox.m_max[i]);
+    if(m_min[i] < otherBox.m_min[i]){
+      m_min[i] = otherBox.m_min[i];
+    }
+    //m_min[i] = std::max( m_min[i], otherBox.m_min[i]);
+    if(m_max[i] > otherBox.m_max[i]){
+      m_max[i] = otherBox.m_max[i];
+    }
+    //m_max[i] = std::min( m_max[i], otherBox.m_max[i]);
   }
 
   if (!isValid() )
@@ -693,7 +701,6 @@ void BoundingBoxAccel< T,NDIMS >::bisect( BoxType& right,
 //    Implementation of static methods
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-AXOM_HOST_DEVICE
 inline void BoundingBoxAccel< T,NDIMS >::getPoints(
   const BoundingBoxAccel< T,2 >& bb,
   std::vector< Point< T,2 > >& pnts )
@@ -710,7 +717,6 @@ inline void BoundingBoxAccel< T,NDIMS >::getPoints(
 
 //------------------------------------------------------------------------------
 template < typename T,int NDIMS >
-AXOM_HOST_DEVICE
 inline void BoundingBoxAccel< T,NDIMS >::getPoints(
   const BoundingBoxAccel< T,3 >& bb,
   std::vector< Point< T,3 > >& pnts )

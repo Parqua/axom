@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/BoundingBox_Accel.hpp"
 
 using namespace axom;
 
@@ -17,7 +17,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_default_constructor)
   static const int DIM = 2;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QBBox bbox;
   EXPECT_FALSE( bbox.isValid() ) <<
@@ -34,7 +34,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_ctor_from_singlePt)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QPoint pt1;
   QPoint pt2(2);
@@ -63,7 +63,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_ctor_from_twoPoints)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -118,7 +118,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_ctor_from_many_points)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   // test single point
   QPoint pt1(0.);
@@ -151,7 +151,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_addPoint)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -186,7 +186,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_test_clear)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -216,7 +216,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_copy_and_assignment)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -261,7 +261,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_test_equality)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   QPoint pt1(1);
   QPoint pt2(3);
@@ -306,7 +306,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_add_box)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   //
   SLIC_INFO( "Testing addBox() for two simple bounding boxes" );
@@ -363,10 +363,10 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_different_coord_types)
 {
   static const int DIM = 3;
   typedef primal::Point< double, DIM > PointD;
-  typedef primal::BoundingBox< double, DIM > BBoxD;
+  typedef primal::BoundingBoxAccel< double, DIM > BBoxD;
 
   typedef primal::Point< int, DIM > PointI;
-  typedef primal::BoundingBox< int, DIM > BBoxI;
+  typedef primal::BoundingBoxAccel< int, DIM > BBoxI;
 
   // checking that an integer point is in the double bounding box
   BBoxD dBox( PointD(1.), PointD(3.));
@@ -400,7 +400,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_expand)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   //
   SLIC_INFO( "Testing bounding box inflate" );
@@ -436,7 +436,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_scale)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
 
   //
   SLIC_INFO( "Testing bounding box scale" );
@@ -477,7 +477,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_shift)
   static const int DIM = 3;
   typedef double CoordType;
   typedef primal::Point< CoordType, DIM > QPoint;
-  typedef primal::BoundingBox< CoordType, DIM > QBBox;
+  typedef primal::BoundingBoxAccel< CoordType, DIM > QBBox;
   typedef primal::Vector< CoordType, DIM > QVec;
 
   //
@@ -543,19 +543,19 @@ AXOM_CUDA_TEST( primal_boundingBox, highest_lowest_values)
   // that adding a point to an empty bounding box always updates the bounds
   // properly
 
-  typedef primal::BoundingBox< double, DIM > BBoxD;
+  typedef primal::BoundingBoxAccel< double, DIM > BBoxD;
   EXPECT_TRUE(BBoxD().getMin()[0] > 0 );
   EXPECT_TRUE(BBoxD().getMax()[0] < 0 );
 
-  typedef primal::BoundingBox< float, DIM > BBoxF;
+  typedef primal::BoundingBoxAccel< float, DIM > BBoxF;
   EXPECT_TRUE(BBoxF().getMin()[0] > 0 );
   EXPECT_TRUE(BBoxF().getMax()[0] < 0 );
 
-  typedef primal::BoundingBox< int, DIM > BBoxI;
+  typedef primal::BoundingBoxAccel< int, DIM > BBoxI;
   EXPECT_TRUE(BBoxI().getMin()[0] > 0 );
   EXPECT_TRUE(BBoxI().getMax()[0] < 0 );
 
-  typedef primal::BoundingBox< unsigned int, DIM > BBoxU;
+  typedef primal::BoundingBoxAccel< unsigned int, DIM > BBoxU;
   EXPECT_TRUE(BBoxU().getMin()[0] > 0 );
   EXPECT_TRUE(BBoxU().getMax()[0] == 0 );
 }
@@ -564,7 +564,7 @@ AXOM_CUDA_TEST( primal_boundingBox, highest_lowest_values)
 AXOM_CUDA_TEST( primal_boundingBox, bb_longest_dimension )
 {
   typedef primal::Point< double,2 > PointType;
-  typedef primal::BoundingBox< double,2 > BoxType;
+  typedef primal::BoundingBoxAccel< double,2 > BoxType;
 
   BoxType bbox( PointType::zero(), PointType::make_point(5.0,10.0) );
   int longest_dimension = bbox.getLongestDimension();
@@ -575,7 +575,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_longest_dimension )
 AXOM_CUDA_TEST( primal_boundingBox, bb_bisect )
 {
   typedef primal::Point< double,2 > PointType;
-  typedef primal::BoundingBox< double,2 > BoxType;
+  typedef primal::BoundingBoxAccel< double,2 > BoxType;
 
   BoxType bbox( PointType::zero(), PointType::ones() );
 
@@ -602,7 +602,7 @@ AXOM_CUDA_TEST( primal_boundingBox, bb_bisect )
 AXOM_CUDA_TEST( primal_boundingBox, bb_get_centroid )
 {
   typedef primal::Point< double,2 > PointType;
-  typedef primal::BoundingBox< double,2 > BoxType;
+  typedef primal::BoundingBoxAccel< double,2 > BoxType;
 
   BoxType bbox( PointType::zero(), PointType::ones() );
   PointType centroid = bbox.getCentroid();
