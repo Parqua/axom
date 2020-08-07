@@ -13,6 +13,7 @@ namespace slam
 
 BitSet::Index const BitSet::npos = -2;
 
+AXOM_HOST_DEVICE
 void BitSet::clear()
 {
   for (int i = 0 ; i < m_numWords ; ++i)
@@ -21,6 +22,7 @@ void BitSet::clear()
   }
 }
 
+AXOM_HOST_DEVICE
 void BitSet::set()
 {
   if (m_numBits == 0)
@@ -40,6 +42,7 @@ void BitSet::set()
                            : lastWordMask();
 }
 
+AXOM_HOST_DEVICE
 void BitSet::flip()
 {
   if (m_numBits == 0)
@@ -59,6 +62,7 @@ void BitSet::flip()
                             : lastWordMask();
 }
 
+AXOM_HOST_DEVICE
 int BitSet::count() const
 {
   int ctr = 0;
@@ -70,12 +74,14 @@ int BitSet::count() const
   return ctr;
 }
 
+AXOM_HOST_DEVICE
 bool BitSet::isValid() const
 {
   bool valid = true;
 
   if (m_numBits < 0 || m_numWords < 0)
   {
+    fprintf(stderr, "Invalid due to bits or words <\n\n");
     valid = false;
   }
 
@@ -83,6 +89,7 @@ bool BitSet::isValid() const
   {
     if (m_numWords != 1 || m_data[0] != Word(0))
     {
+        fprintf(stderr, "Invalid due to word count: %d, or data entry: %llu  %llu \n\n", m_numWords, m_data[0], Word(0));
       valid = false;
     }
   }
@@ -109,11 +116,13 @@ bool BitSet::isValid() const
   return valid;
 }
 
+AXOM_HOST_DEVICE
 BitSet::Index BitSet::find_first() const
 {
   return find_next(-1);
 }
 
+AXOM_HOST_DEVICE
 BitSet::Index BitSet::find_next(Index idx) const
 {
   // Handle boundary cases
@@ -156,6 +165,7 @@ BitSet::Index BitSet::find_next(Index idx) const
   return BitSet::npos;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator|=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -172,6 +182,7 @@ BitSet& BitSet::operator|=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator&=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -188,6 +199,7 @@ BitSet& BitSet::operator&=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator^=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -204,6 +216,7 @@ BitSet& BitSet::operator^=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet& BitSet::operator-=(const BitSet& other)
 {
   SLIC_ASSERT_MSG(
@@ -220,6 +233,7 @@ BitSet& BitSet::operator-=(const BitSet& other)
   return *this;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator|(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -227,6 +241,7 @@ BitSet operator|(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator&(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -234,6 +249,7 @@ BitSet operator&(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator^(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -241,6 +257,7 @@ BitSet operator^(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 BitSet operator-(const BitSet & lhs, const BitSet & rhs)
 {
   BitSet s(lhs);
@@ -248,14 +265,18 @@ BitSet operator-(const BitSet & lhs, const BitSet & rhs)
   return s;
 }
 
+AXOM_HOST_DEVICE
 bool BitSet::operator==(const BitSet & other) const
 {
   if (size() != other.size() || m_numBits != other.m_numBits)
   {
     return false;
   }
-
-  return m_data == other.m_data;
+  bool tester = true;
+  for(int i = 0; i < m_numWords; i++){
+        tester = tester && (m_data[i] == other.m_data[i]);
+  }
+  return tester;
 }
 
 
