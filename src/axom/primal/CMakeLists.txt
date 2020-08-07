@@ -20,6 +20,7 @@ set( primal_headers
      ## geometry
      geometry/BezierCurve.hpp
      geometry/BoundingBox.hpp
+     geometry/BoundingBox_Accel.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
      geometry/NumericArray.hpp
